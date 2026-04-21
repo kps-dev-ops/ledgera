@@ -13,7 +13,6 @@ SHARED_APPS = [
     "apps.core",
     "apps.tenants",
     "apps.referentiels",
-    "apps.audit",
     "django.contrib.contenttypes",
     "django.contrib.auth",
     "django.contrib.sessions",
@@ -38,7 +37,8 @@ SHARED_APPS = [
 ]
 
 TENANT_APPS = [
-    # Rempli au fur et à mesure des lots suivants (L1+)
+    "apps.audit",  # Piste d'audit par société (triggers PG, lecture seule)
+    # apps.comptabilite, apps.tiers, apps.immobilisations, etc. — ajoutés en L1+
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
@@ -124,9 +124,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+# allauth v65+ API
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login/"
