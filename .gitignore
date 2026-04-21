@@ -14,3 +14,13 @@ dist/
 build/
 node_modules/
 apps/theme/static/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage.xml
+celerybeat-schedule
+celerybeat.pid
+*.log
+*.sqlite3
+Thumbs.db
+desktop.ini
