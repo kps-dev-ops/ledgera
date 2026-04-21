@@ -1,0 +1,55 @@
+[project]
+name = "ledgera"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.1,<5.2",
+    "django-tenants>=3.7",
+    "psycopg[binary]>=3.2",
+    "django-allauth[mfa]>=65.0",
+    "django-otp>=1.5",
+    "qrcode[pil]>=7.4",
+    "django-axes>=7.0",
+    "celery[redis]>=5.4",
+    "django-celery-beat>=2.7",
+    "django-htmx>=1.21",
+    "django-crispy-forms>=2.3",
+    "crispy-tailwind>=1.0",
+    "django-tailwind[reload]>=3.8",
+    "django-browser-reload>=1.13",
+    "openpyxl>=3.1",
+    "weasyprint>=63.0",
+    "django-unfold>=0.40",
+    "redis>=5.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-django>=4.9",
+    "factory-boy>=3.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "django-stubs>=5.1",
+]
+
+[tool.ruff]
+line-length = 119
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--tb=short -q"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.dev"
