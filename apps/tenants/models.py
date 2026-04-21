@@ -1,7 +1,6 @@
-from django_tenants.models import TenantMixin, DomainMixin
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-
+from django_tenants.models import DomainMixin, TenantMixin
 
 REFERENTIEL_CHOICES = [
     ("SYSCOHADA", "SYSCOHADA 2017"),
@@ -31,7 +30,7 @@ DEVISE_CHOICES = [
 
 _schema_name_validator = RegexValidator(
     r"^[a-z][a-z0-9_]{0,61}$",
-    "Le schema_name doit commencer par une lettre minuscule et ne contenir que des lettres minuscules, chiffres et underscores (max 62 caractères).",
+    "schema_name : lettres minuscules, chiffres et underscores uniquement (max 62 car.).",
 )
 
 
@@ -73,7 +72,6 @@ class Societe(TenantMixin):
         verbose_name_plural = "Sociétés"
 
     def clean(self):
-        from django.core.exceptions import ValidationError
         _schema_name_validator(self.schema_name)
         super().clean()
 

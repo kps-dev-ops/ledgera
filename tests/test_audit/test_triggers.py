@@ -1,7 +1,7 @@
-import pytest
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django_tenants.test.cases import TenantTestCase
-from django.contrib.auth import get_user_model
+
 from apps.audit.models import JournalAudit
 
 User = get_user_model()
@@ -16,10 +16,11 @@ class TestAuditTriggers(TenantTestCase):
 
     def test_journal_audit_insert_only(self):
         """Vérifie que l'admin refuse la suppression (has_delete_permission=False)."""
-        from apps.audit.admin import JournalAuditAdmin
         from django.contrib.admin.sites import AdminSite
 
-        entry = JournalAudit.objects.create(
+        from apps.audit.admin import JournalAuditAdmin
+
+        JournalAudit.objects.create(
             action="TEST",
             table_cible="test_table",
             enregistrement_id=1,
