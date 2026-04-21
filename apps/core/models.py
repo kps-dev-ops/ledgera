@@ -3,20 +3,27 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """
+    Utilisateur Ledgera. Identifiant = email.
+    La 2FA est gérée via django-otp (TOTPDevice) — pas de secret stocké ici.
+    """
+
     STATUT_CHOICES = [
         ("actif", "Actif"),
         ("suspendu", "Suspendu"),
         ("verrouille", "Verrouillé"),
     ]
 
+    # Rendre username optionnel (allauth crée les users par email, pas par username)
+    username = models.CharField(max_length=150, blank=True, default="")
     email = models.EmailField(unique=True)
-    totp_secret = models.CharField(max_length=64, blank=True)
-    is_2fa_enabled = models.BooleanField(default=False)
-    date_derniere_connexion = models.DateTimeField(null=True, blank=True)
+    # date_derniere_connexion_2fa track la dernière connexion avec 2FA validée
+    # (distinct de AbstractUser.last_login qui track toute connexion)
+    date_derniere_connexion_2fa = models.DateTimeField(null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default="actif")
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
+    REQUIRED_FIELDS = []
 
     class Meta:
         verbose_name = "Utilisateur"
@@ -25,8 +32,18 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
+    @property
+    def is_2fa_enabled(self) -> bool:
+        """Vérifie si l'utilisateur a au moins un appareil TOTP confirmé via django-otp."""
+        return self.totpdevice_set.filter(confirmed=True).exists()
+
 
 class SocieteMembership(models.Model):
+    """
+    Liaison utilisateur ↔ société.
+    Un utilisateur ne peut avoir qu'un seul rôle actif par société.
+    """
+
     ROLE_CHOICES = [
         ("admin", "Administrateur"),
         ("comptable_senior", "Comptable Senior"),
@@ -47,7 +64,8 @@ class SocieteMembership(models.Model):
     class Meta:
         verbose_name = "Appartenance à une société"
         verbose_name_plural = "Appartenances"
-        unique_together = [("user", "societe", "role")]
+        # Un seul rôle par utilisateur par société
+        unique_together = [("user", "societe")]
 
     def __str__(self):
-        return f"{self.user.email} — {self.role} @ {self.societe_id}"
+        return f"{self.user.email} — {self.role} @ {self.societe}"
