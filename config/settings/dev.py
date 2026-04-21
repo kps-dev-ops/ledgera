@@ -1,5 +1,7 @@
 from .base import *  # noqa: F401, F403
 
+import os
+
 DEBUG = True
 SECRET_KEY = "dev-insecure-key-not-for-prod"
 
@@ -14,3 +16,7 @@ LOGGING = {
         "django.db.backends": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
     },
 }
+
+MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]  # noqa: F405
+
+AXES_ENABLED = False
