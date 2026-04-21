@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="ledgera">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ledgera{% endblock %}</title>
+    {% load static tailwind_tags %}
+    {% tailwind_css %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body class="bg-base-200 min-h-screen font-sans text-base-content">
+
+    {% block navbar %}{% endblock %}
+
+    <main class="container mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block modals %}{% endblock %}
+
+    <div id="toast-container" class="toast toast-top toast-end z-50">
+        {% block toasts %}{% endblock %}
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

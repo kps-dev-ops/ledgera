@@ -1,0 +1,6 @@
+{% comment %}
+  Params: text (str), color (success|error|warning|info|neutral)
+{% endcomment %}
+<span class="badge badge-{{ color|default:'neutral' }} badge-sm font-medium">
+    {{ text }}
+</span>

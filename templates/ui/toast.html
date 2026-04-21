@@ -1,0 +1,10 @@
+{% comment %}
+  Params: message (str), type (success|error|warning|info)
+{% endcomment %}
+<div class="alert alert-{{ type|default:'info' }} shadow-lg max-w-sm"
+     x-data="{ show: true }"
+     x-show="show"
+     x-init="setTimeout(() => show = false, 4000)"
+     x-transition>
+    <span>{{ message }}</span>
+</div>

@@ -20,3 +20,5 @@ LOGGING = {
 MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]  # noqa: F405
 
 AXES_ENABLED = False
+
+NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
