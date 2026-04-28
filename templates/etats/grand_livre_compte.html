@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}GL {{ compte.numero }} — {{ exercice.code }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <a href="{% url 'etats:grand_livre' %}?exercice={{ exercice.code }}" class="link text-sm">← Grand livre</a>
+    <h1 class="text-2xl font-semibold mt-2">
+        <span class="font-mono opacity-70">{{ compte.numero }}</span> — {{ compte.libelle }}
+    </h1>
+    <p class="opacity-70">Exercice {{ exercice.code }} — Classe {{ compte.classe }}</p>
+</div>
+
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm table-zebra">
+        <thead><tr><th>Date</th><th>Pièce</th><th>Tiers</th><th>Libellé</th>
+            <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+            <th class="text-right">Solde</th><th>Lettre</th></tr></thead>
+        <tbody>
+            {% for r in lignes %}
+            <tr>
+                <td>{{ r.date|date:"d/m/Y" }}</td>
+                <td><span class="font-mono">{{ r.journal }}#{{ r.piece_numero }}</span></td>
+                <td>{% if r.tiers %}{{ r.tiers.code_auxiliaire }} {{ r.tiers.raison_sociale }}{% endif %}</td>
+                <td>{{ r.libelle }}</td>
+                <td class="text-right font-mono tabular-nums">{% if r.debit %}{{ r.debit }}{% endif %}</td>
+                <td class="text-right font-mono tabular-nums">{% if r.credit %}{{ r.credit }}{% endif %}</td>
+                <td class="text-right font-mono tabular-nums">{{ r.solde }}</td>
+                <td>{{ r.lettre }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="text-center py-6 opacity-60">Aucun mouvement</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="font-bold">
+            <tr><td colspan="6">Solde final</td>
+                <td class="text-right font-mono tabular-nums">{{ solde_final }}</td><td></td></tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

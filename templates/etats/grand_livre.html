@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Grand livre — {{ exercice.code }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Grand livre — Exercice {{ exercice.code }}</h1>
+
+<form method="get" class="mb-4">
+    <select name="exercice" class="select select-sm select-bordered" onchange="this.form.submit()">
+        {% for ex in exercices %}
+        <option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm table-zebra">
+        <thead><tr><th>Compte</th><th>Libellé</th><th>Cl.</th>
+            <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+            <th class="text-right">Solde</th></tr></thead>
+        <tbody>
+            {% for c in comptes %}
+            <tr>
+                <td class="font-mono">
+                    <a href="{% url 'etats:grand_livre_compte' c.compte__numero %}?exercice={{ exercice.code }}" class="link link-primary">
+                        {{ c.compte__numero }}
+                    </a>
+                </td>
+                <td>{{ c.compte__libelle }}</td>
+                <td>{{ c.compte__classe }}</td>
+                <td class="text-right font-mono tabular-nums">{{ c.total_debit|default:0 }}</td>
+                <td class="text-right font-mono tabular-nums">{{ c.total_credit|default:0 }}</td>
+                <td class="text-right font-mono tabular-nums">{{ c.solde|default:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-6 opacity-60">Aucune écriture validée</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

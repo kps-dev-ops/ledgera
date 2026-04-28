@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Bilan SYSCOHADA — {{ exercice.code }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-start mb-4">
+    <div>
+        <h1 class="text-2xl font-semibold">Bilan SYSCOHADA</h1>
+        <p class="opacity-70">Exercice {{ exercice.code }} — au {{ exercice.date_fin|date:"d/m/Y" }}</p>
+    </div>
+    <div class="flex gap-2">
+        <form method="get">
+            <select name="exercice" class="select select-sm select-bordered" onchange="this.form.submit()">
+                {% for ex in exercices %}<option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>{% endfor %}
+            </select>
+        </form>
+        <form method="post" action="{% url 'imports_exports:export_create' 'BILAN_PDF' %}">
+            {% csrf_token %}
+            <input type="hidden" name="exercice" value="{{ exercice.code }}">
+            <button class="btn btn-sm btn-outline">PDF</button>
+        </form>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-lg">Actif</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Code</th><th>Libellé</th><th class="text-right">Montant</th></tr></thead>
+                <tbody>
+                    {% for p in actif %}
+                    <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
+                        <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="opacity-60">Aucun poste</td></tr>{% endfor %}
+                </tbody>
+                <tfoot class="font-bold">
+                    <tr><td colspan="2">Total actif</td>
+                        <td class="text-right font-mono tabular-nums">{{ total_actif }}</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-lg">Passif</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Code</th><th>Libellé</th><th class="text-right">Montant</th></tr></thead>
+                <tbody>
+                    {% for p in passif %}
+                    <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
+                        <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="opacity-60">Aucun poste</td></tr>{% endfor %}
+                </tbody>
+                <tfoot class="font-bold">
+                    <tr><td colspan="2">Total passif</td>
+                        <td class="text-right font-mono tabular-nums">{{ total_passif }}</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="alert {% if equilibre %}alert-success{% else %}alert-error{% endif %} mt-4">
+    {% if equilibre %}Bilan équilibré ✓ ({{ total_actif }} = {{ total_passif }})
+    {% else %}Bilan déséquilibré : écart de {{ ecart }}{% endif %}
+</div>
+
+<p class="text-xs opacity-60 mt-2">
+    V1 : valeur nette uniquement, hors amortissements (à venir en L3).
+</p>
+{% endblock %}

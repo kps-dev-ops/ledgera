@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Balance auxiliaire — {{ exercice.code }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Balance auxiliaire — Exercice {{ exercice.code }}</h1>
+
+<form method="get" class="flex gap-2 mb-4">
+    <select name="compte" class="select select-sm select-bordered" onchange="this.form.submit()">
+        <option value="">— Compte collectif —</option>
+        {% for c in comptes_collectifs %}
+        <option value="{{ c.pk }}" {% if c == compte %}selected{% endif %}>{{ c.numero }} — {{ c.libelle }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if compte %}
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm table-zebra">
+        <thead><tr><th>Code</th><th>Raison sociale</th>
+            <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+            <th class="text-right">Solde</th></tr></thead>
+        <tbody>
+            {% for l in lignes %}
+            <tr>
+                <td class="font-mono">{{ l.tiers__code_auxiliaire }}</td>
+                <td>{{ l.tiers__raison_sociale }}</td>
+                <td class="text-right font-mono tabular-nums">{{ l.total_debit|default:0 }}</td>
+                <td class="text-right font-mono tabular-nums">{{ l.total_credit|default:0 }}</td>
+                <td class="text-right font-mono tabular-nums">{{ l.solde|default:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center py-6 opacity-60">Aucun mouvement</td></tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="font-bold">
+            <tr><td colspan="2">Total</td>
+                <td class="text-right font-mono tabular-nums">{{ total_debit }}</td>
+                <td class="text-right font-mono tabular-nums">{{ total_credit }}</td>
+                <td></td></tr>
+        </tfoot>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
