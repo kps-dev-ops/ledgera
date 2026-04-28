@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ tiers.code_auxiliaire }} — {{ tiers.raison_sociale }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-start mb-4">
+    <div>
+        <h1 class="text-2xl font-semibold">
+            <span class="font-mono text-base opacity-70">{{ tiers.code_auxiliaire }}</span>
+            {{ tiers.raison_sociale }}
+        </h1>
+        <p class="opacity-70">{{ tiers.get_type_tiers_display }} — Compte collectif {{ tiers.compte_collectif.numero }}</p>
+    </div>
+    <a href="{% url 'tiers:tiers_update' tiers.pk %}" class="btn btn-sm btn-ghost">Éditer</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-lg">Identification</h2>
+            <p><strong>Forme :</strong> {{ tiers.forme_juridique|default:"—" }}</p>
+            <p><strong>ID fiscal :</strong> {{ tiers.identifiant_fiscal|default:"—" }}</p>
+            <p><strong>Adresse :</strong><br>
+                {{ tiers.adresse }}<br>
+                {{ tiers.cp }} {{ tiers.ville }} ({{ tiers.pays }})</p>
+        </div>
+    </div>
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-lg">Règlement</h2>
+            <p><strong>IBAN :</strong> <span class="font-mono text-xs">{{ tiers.iban|default:"—" }}</span></p>
+            <p><strong>BIC :</strong> <span class="font-mono text-xs">{{ tiers.bic|default:"—" }}</span></p>
+            <p><strong>Mode :</strong> {{ tiers.get_mode_reglement_display }} — délai {{ tiers.delai_reglement_jours }} j</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

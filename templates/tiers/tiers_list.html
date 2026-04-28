@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Tiers — Ledgera{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-semibold">Tiers</h1>
+    <a href="{% url 'tiers:tiers_create' %}" class="btn btn-primary">+ Nouveau tiers</a>
+</div>
+
+<form method="get" class="flex gap-2 mb-4">
+    <select name="type" class="select select-sm select-bordered">
+        <option value="">Tous types</option>
+        <option value="CLIENT" {% if request.GET.type == "CLIENT" %}selected{% endif %}>Clients</option>
+        <option value="FOURNISSEUR" {% if request.GET.type == "FOURNISSEUR" %}selected{% endif %}>Fournisseurs</option>
+        <option value="DIVERS" {% if request.GET.type == "DIVERS" %}selected{% endif %}>Divers</option>
+    </select>
+    <input type="search" name="q" placeholder="Raison sociale…" value="{{ request.GET.q }}" class="input input-sm input-bordered">
+    <button class="btn btn-sm">Filtrer</button>
+</form>
+
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm">
+        <thead><tr><th>Code</th><th>Raison sociale</th><th>Type</th><th>Compte collectif</th><th>Actif</th><th></th></tr></thead>
+        <tbody>
+            {% for t in tiers_list %}
+            <tr>
+                <td class="font-mono">{{ t.code_auxiliaire }}</td>
+                <td>{{ t.raison_sociale }}</td>
+                <td>{{ t.get_type_tiers_display }}</td>
+                <td class="font-mono text-xs">{{ t.compte_collectif.numero }}</td>
+                <td>{% if t.actif %}<span class="badge badge-success badge-xs">oui</span>{% else %}<span class="badge badge-ghost badge-xs">non</span>{% endif %}</td>
+                <td><a href="{% url 'tiers:tiers_detail' t.pk %}" class="link link-primary">voir</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-6 opacity-60">Aucun tiers</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

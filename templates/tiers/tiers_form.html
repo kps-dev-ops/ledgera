@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Édition tiers{% else %}Nouveau tiers{% endif %} — Ledgera{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">
+    {% if object %}Édition de {{ object.raison_sociale }}{% else %}Nouveau tiers{% endif %}
+</h1>
+
+<form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div class="card bg-base-100 shadow">
+        <div class="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in form %}
+            <label class="form-control w-full">
+                <span class="label-text">{{ field.label }}</span>
+                {{ field }}
+                {% if field.help_text %}<span class="text-xs opacity-60">{{ field.help_text }}</span>{% endif %}
+                {% if field.errors %}<span class="text-error text-xs">{{ field.errors|join:", " }}</span>{% endif %}
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="flex gap-2 justify-end">
+        <a href="{% url 'tiers:tiers_list' %}" class="btn btn-ghost">Annuler</a>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </div>
+</form>
+{% endblock %}
