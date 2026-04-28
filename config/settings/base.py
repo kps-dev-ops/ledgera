@@ -1,5 +1,5 @@
-from pathlib import Path
 import os
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -38,7 +38,9 @@ SHARED_APPS = [
 
 TENANT_APPS = [
     "apps.audit",  # Piste d'audit par société (triggers PG, lecture seule)
-    # apps.comptabilite, apps.tiers, apps.immobilisations, etc. — ajoutés en L1+
+    "apps.comptabilite",  # M1 : journaux, écritures, pièces, périodes
+    "apps.tiers",  # M2 : clients, fournisseurs, lettrage
+    # apps.immobilisations, apps.banque, apps.etats, etc. — ajoutés en L2+
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
