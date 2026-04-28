@@ -1,0 +1,15 @@
+{% if tiers %}
+<ul class="menu menu-sm bg-base-100 rounded shadow border border-base-300 max-h-64 overflow-y-auto">
+    {% for t in tiers %}
+    <li>
+        <a data-id="{{ t.id }}" data-code="{{ t.code_auxiliaire }}">
+            <span class="font-mono text-xs">{{ t.code_auxiliaire }}</span>
+            {{ t.raison_sociale }}
+            <span class="badge badge-xs badge-ghost">{{ t.get_type_tiers_display }}</span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="text-xs opacity-50 px-2 py-1">Aucun tiers trouvé</div>
+{% endif %}

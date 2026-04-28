@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Pièces comptables — Ledgera{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-semibold">Pièces comptables</h1>
+    <a href="{% url 'comptabilite:piece_create' %}" class="btn btn-primary">+ Nouvelle pièce</a>
+</div>
+
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Date</th><th>Journal</th><th>N°</th><th>Référence</th>
+                <th>Libellé</th><th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                <th>Statut</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for piece in pieces %}
+            <tr>
+                <td>{{ piece.date_piece|date:"d/m/Y" }}</td>
+                <td><span class="badge badge-ghost">{{ piece.journal.code }}</span></td>
+                <td class="font-mono">{{ piece.numero|default:"—" }}</td>
+                <td>{{ piece.reference }}</td>
+                <td>{{ piece.libelle }}</td>
+                <td class="text-right font-mono tabular-nums">{{ piece.total_debit }}</td>
+                <td class="text-right font-mono tabular-nums">{{ piece.total_credit }}</td>
+                <td>
+                    {% if piece.statut == "BROUILLARD" %}<span class="badge badge-warning badge-sm">Brouillard</span>
+                    {% elif piece.statut == "VALIDEE" %}<span class="badge badge-success badge-sm">Validée</span>
+                    {% else %}<span class="badge badge-neutral badge-sm">{{ piece.get_statut_display }}</span>
+                    {% endif %}
+                </td>
+                <td><a href="{% url 'comptabilite:piece_detail' piece.pk %}" class="link link-primary">voir</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="text-center py-6 opacity-60">Aucune pièce</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<div class="join mt-4">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="join-item btn btn-sm">«</a>{% endif %}
+    <span class="join-item btn btn-sm btn-disabled">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="join-item btn btn-sm">»</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

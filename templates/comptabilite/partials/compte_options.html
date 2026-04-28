@@ -1,0 +1,17 @@
+{% if comptes %}
+<ul class="menu menu-sm bg-base-100 rounded shadow border border-base-300 max-h-64 overflow-y-auto">
+    {% for c in comptes %}
+    <li>
+        <a class="font-mono text-xs"
+           data-numero="{{ c.numero }}"
+           data-id="{{ c.id }}"
+           data-collectif="{{ c.collectif_tiers|yesno:'1,0' }}">
+            {{ c.numero }} — {{ c.libelle }}
+            {% if c.collectif_tiers %}<span class="badge badge-xs badge-info">tiers</span>{% endif %}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="text-xs opacity-50 px-2 py-1">Aucun compte trouvé</div>
+{% endif %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == "create" %}Nouvelle pièce{% else %}Édition pièce{% endif %} — Ledgera{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">
+    {% if mode == "create" %}Nouvelle pièce comptable{% else %}Édition de la pièce{% endif %}
+</h1>
+
+<form method="post" id="piece-form" class="space-y-4">
+    {% csrf_token %}
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <h2 class="card-title text-lg">En-tête</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {% for field in form %}
+                <label class="form-control w-full">
+                    <span class="label-text">{{ field.label }}</span>
+                    {{ field }}
+                    {% if field.errors %}<span class="text-error text-xs">{{ field.errors|join:", " }}</span>{% endif %}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="card-title text-lg">Lignes d'écriture</h2>
+                <div id="totaux">
+                    <span class="badge badge-ghost">Saisir des montants…</span>
+                </div>
+            </div>
+            {{ formset.management_form }}
+            {% if formset.non_form_errors %}
+                <div class="alert alert-error">{{ formset.non_form_errors|join:", " }}</div>
+            {% endif %}
+
+            <div class="overflow-x-auto"
+                 hx-trigger="change from:input[name$='-debit'], change from:input[name$='-credit']"
+                 hx-post="{% url 'comptabilite:htmx_totaux' %}"
+                 hx-target="#totaux"
+                 hx-swap="outerHTML"
+                 hx-include="closest form">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Compte</th><th>Tiers</th><th>Libellé</th>
+                            <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                            <th>Échéance</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lignes-tbody">
+                        {% for form_ligne in formset %}
+                        <tr>
+                            {% for hidden in form_ligne.hidden_fields %}{{ hidden }}{% endfor %}
+                            <td>{{ form_ligne.compte }}</td>
+                            <td>{{ form_ligne.tiers }}</td>
+                            <td>{{ form_ligne.libelle }}</td>
+                            <td class="text-right">{{ form_ligne.debit }}</td>
+                            <td class="text-right">{{ form_ligne.credit }}</td>
+                            <td>{{ form_ligne.date_echeance }}</td>
+                            <td>{% if formset.can_delete %}{{ form_ligne.DELETE }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-start mt-2">
+                <button type="button" class="btn btn-sm btn-outline"
+                        x-data="{ idx: {{ formset.total_form_count }} }"
+                        @click="
+                            fetch('{% url 'comptabilite:htmx_nouvelle_ligne' %}?index=' + idx)
+                              .then(r => r.text())
+                              .then(html => {
+                                document.getElementById('lignes-tbody').insertAdjacentHTML('beforeend', html);
+                                idx++;
+                                document.querySelector('input[name=lignes-TOTAL_FORMS]').value = idx;
+                              });
+                        ">
+                    + Ajouter une ligne
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex gap-2 justify-end">
+        <a href="{% url 'comptabilite:piece_list' %}" class="btn btn-ghost">Annuler</a>
+        <button type="submit" class="btn btn-primary">Enregistrer brouillard</button>
+    </div>
+</form>
+{% endblock %}

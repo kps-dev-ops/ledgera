@@ -1,0 +1,10 @@
+<tr>
+    {% for hidden in form_ligne.hidden_fields %}{{ hidden }}{% endfor %}
+    <td>{{ form_ligne.compte }}</td>
+    <td>{{ form_ligne.tiers }}</td>
+    <td>{{ form_ligne.libelle }}</td>
+    <td class="text-right">{{ form_ligne.debit }}</td>
+    <td class="text-right">{{ form_ligne.credit }}</td>
+    <td>{{ form_ligne.date_echeance }}</td>
+    <td></td>
+</tr>
