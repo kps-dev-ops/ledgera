@@ -1,6 +1,7 @@
-from django.test import TestCase
 from django.db import IntegrityError
-from apps.referentiels.models import PlanComptableType, CompteType
+from django.test import TestCase
+
+from apps.referentiels.models import CompteType, PlanComptableType
 
 
 class TestPlanComptableType(TestCase):

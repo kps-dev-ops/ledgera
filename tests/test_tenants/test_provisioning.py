@@ -1,9 +1,9 @@
-from django.test import TestCase
-from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError, connection
+from django.test import TestCase
 from django_tenants.utils import schema_context
-from django.db import connection
-from apps.tenants.models import Societe, Domain
+
+from apps.tenants.models import Domain, Societe
 
 
 class TestSocieteCreation(TestCase):

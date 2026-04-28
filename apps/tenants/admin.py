@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Societe, Domain
+
+from .models import Domain, Societe
 
 
 @admin.register(Societe)

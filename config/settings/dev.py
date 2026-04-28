@@ -1,6 +1,5 @@
-from .base import *  # noqa: F401, F403
 
-import os
+from .base import *  # noqa: F401, F403
 
 DEBUG = True
 SECRET_KEY = "dev-insecure-key-not-for-prod"

@@ -1,6 +1,7 @@
 import pytest
 from django_tenants.test.client import TenantClient
-from apps.tenants.models import Societe, Domain
+
+from apps.tenants.models import Domain, Societe
 
 
 @pytest.fixture(scope="session")

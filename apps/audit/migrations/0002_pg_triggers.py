@@ -1,6 +1,5 @@
 from django.db import migrations
 
-
 REVOKE_SQL = """
 REVOKE UPDATE, DELETE ON audit_journalaudit FROM PUBLIC;
 """

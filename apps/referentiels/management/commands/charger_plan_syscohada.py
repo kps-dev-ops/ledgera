@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
+
 from django.core.management.base import BaseCommand
-from apps.referentiels.models import PlanComptableType, CompteType
+
+from apps.referentiels.models import CompteType, PlanComptableType
 
 
 class Command(BaseCommand):

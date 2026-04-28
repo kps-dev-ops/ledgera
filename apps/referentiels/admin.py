@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import PlanComptableType, CompteType
+
+from .models import CompteType, PlanComptableType
 
 
 @admin.register(PlanComptableType)

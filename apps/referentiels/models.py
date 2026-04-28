@@ -1,6 +1,5 @@
 from django.db import models
 
-
 SENS_CHOICES = [
     ("debiteur", "Débiteur"),
     ("crediteur", "Créditeur"),

@@ -1,6 +1,8 @@
-from django.test import RequestFactory, TestCase
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth import get_user_model
-from unittest.mock import patch, MagicMock
+from django.test import RequestFactory, TestCase
+
 from apps.core.middleware import AuditContextMiddleware
 
 User = get_user_model()

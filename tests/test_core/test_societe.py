@@ -1,6 +1,7 @@
-from django_tenants.test.cases import TenantTestCase
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
+from django_tenants.test.cases import TenantTestCase
+
 from apps.core.models import SocieteMembership
 from apps.tenants.models import Societe
 
