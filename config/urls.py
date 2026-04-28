@@ -7,6 +7,8 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("compta/", include("apps.comptabilite.urls")),
     path("tiers/", include("apps.tiers.urls")),
+    path("etats/", include("apps.etats.urls")),
+    path("io/", include("apps.imports_exports.urls")),
 ]
 
 if settings.DEBUG:
