@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Document{% endblock %}</title>
+</head>
+<body>
+    <h1 class="doc-title">{% block doc_title %}Document Ledgera{% endblock %}</h1>
+    <div class="identite">
+        <strong>Exercice :</strong> {{ exercice.code }}
+        ({{ exercice.date_debut|date:"d/m/Y" }} → {{ exercice.date_fin|date:"d/m/Y" }})
+    </div>
+    {% block content %}{% endblock %}
+</body>
+</html>

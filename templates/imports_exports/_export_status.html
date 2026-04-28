@@ -1,0 +1,28 @@
+{% load django_htmx %}
+<div id="status-block" {% if job.statut not in "TERMINEERREUR" %}
+     hx-get="{% url 'imports_exports:export_status' job.pk %}"
+     hx-trigger="every 2s"
+     hx-swap="outerHTML"{% endif %}>
+    <div class="card bg-base-100 shadow">
+        <div class="card-body">
+            <div class="flex justify-between items-center">
+                <div>
+                    {% if job.statut == "EN_ATTENTE" %}<span class="badge badge-ghost">En attente…</span>
+                    {% elif job.statut == "EN_COURS" %}<span class="badge badge-warning">Génération en cours…</span>
+                    {% elif job.statut == "TERMINE" %}<span class="badge badge-success">Terminé ✓</span>
+                    {% elif job.statut == "ERREUR" %}<span class="badge badge-error">Erreur</span>
+                    {% endif %}
+                    <span class="ml-2 opacity-70">créé {{ job.date_creation|date:"H:i:s" }}</span>
+                </div>
+                {% if job.statut == "TERMINE" %}
+                <a href="{% url 'imports_exports:export_download' job.pk %}" class="btn btn-primary">
+                    Télécharger
+                </a>
+                {% endif %}
+            </div>
+            {% if job.erreur %}
+            <div class="alert alert-error mt-2"><pre class="text-xs whitespace-pre-wrap">{{ job.erreur }}</pre></div>
+            {% endif %}
+        </div>
+    </div>
+</div>

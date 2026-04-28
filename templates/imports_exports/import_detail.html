@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Import #{{ job.pk }}{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Import #{{ job.pk }} — {{ job.get_modele_display }}</h1>
+
+<div id="status-block"
+     hx-get="{% url 'imports_exports:import_status' job.pk %}"
+     hx-trigger="every 2s"
+     hx-swap="outerHTML">
+    {% include "imports_exports/_import_status.html" %}
+</div>
+{% endblock %}

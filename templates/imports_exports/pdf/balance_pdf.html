@@ -1,0 +1,32 @@
+{% extends "imports_exports/pdf/base_pdf.html" %}
+{% block title %}Balance {{ exercice.code }}{% endblock %}
+{% block doc_title %}Balance générale — Exercice {{ exercice.code }}{% endblock %}
+{% block content %}
+<table>
+    <thead>
+        <tr><th>Compte</th><th>Libellé</th><th>Cl.</th>
+            <th class="num">Débit</th><th class="num">Crédit</th><th class="num">Solde</th></tr>
+    </thead>
+    <tbody>
+        {% for l in lignes %}
+        <tr>
+            <td>{{ l.compte__numero }}</td>
+            <td>{{ l.compte__libelle }}</td>
+            <td>{{ l.compte__classe }}</td>
+            <td class="num">{{ l.total_debit|default:0 }}</td>
+            <td class="num">{{ l.total_credit|default:0 }}</td>
+            <td class="num">{{ l.solde|default:0 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr><td colspan="3">TOTAL GÉNÉRAL</td>
+            <td class="num">{{ total_debit }}</td>
+            <td class="num">{{ total_credit }}</td>
+            <td class="num">
+                {% if equilibre %}<span class="equilibre-ok">Équilibrée</span>
+                {% else %}<span class="equilibre-ko">Déséquilibre</span>{% endif %}
+            </td></tr>
+    </tfoot>
+</table>
+{% endblock %}

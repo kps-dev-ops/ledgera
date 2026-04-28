@@ -1,0 +1,31 @@
+{% extends "imports_exports/pdf/base_pdf.html" %}
+{% block title %}Bilan {{ exercice.code }}{% endblock %}
+{% block doc_title %}Bilan SYSCOHADA — Exercice {{ exercice.code }}{% endblock %}
+{% block content %}
+<h2>Actif</h2>
+<table>
+    <thead><tr><th>Code</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+    <tbody>
+        {% for p in actif %}
+        <tr><td>{{ p.code }}</td><td>{{ p.libelle }}</td><td class="num">{{ p.montant }}</td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total actif</td><td class="num">{{ total_actif }}</td></tr></tfoot>
+</table>
+
+<h2>Passif</h2>
+<table>
+    <thead><tr><th>Code</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+    <tbody>
+        {% for p in passif %}
+        <tr><td>{{ p.code }}</td><td>{{ p.libelle }}</td><td class="num">{{ p.montant }}</td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total passif</td><td class="num">{{ total_passif }}</td></tr></tfoot>
+</table>
+
+<p style="margin-top: 12pt;">
+    {% if equilibre %}<span class="equilibre-ok">Bilan équilibré ✓</span>
+    {% else %}<span class="equilibre-ko">Écart : {{ ecart }}</span>{% endif %}
+</p>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Mes exports — Ledgera{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-semibold">Mes exports</h1>
+    <form method="post" action="{% url 'imports_exports:export_create' 'FEC' %}" class="flex gap-2">
+        {% csrf_token %}
+        <input type="text" name="exercice" placeholder="2026" class="input input-sm input-bordered" required>
+        <button class="btn btn-sm btn-primary">Générer FEC</button>
+    </form>
+</div>
+
+<div class="overflow-x-auto bg-base-100 rounded shadow">
+    <table class="table table-sm">
+        <thead><tr><th>#</th><th>Type</th><th>Statut</th><th>Créé le</th><th>Fini le</th><th></th></tr></thead>
+        <tbody>
+            {% for j in jobs %}
+            <tr>
+                <td>{{ j.pk }}</td>
+                <td>{{ j.get_type_export_display }}</td>
+                <td>{% if j.statut == "TERMINE" %}<span class="badge badge-success badge-sm">Terminé</span>
+                    {% elif j.statut == "ERREUR" %}<span class="badge badge-error badge-sm">Erreur</span>
+                    {% elif j.statut == "EN_COURS" %}<span class="badge badge-warning badge-sm">En cours</span>
+                    {% else %}<span class="badge badge-ghost badge-sm">{{ j.statut }}</span>{% endif %}</td>
+                <td>{{ j.date_creation|date:"d/m H:i" }}</td>
+                <td>{{ j.date_fin|date:"d/m H:i" }}</td>
+                <td><a href="{% url 'imports_exports:export_detail' j.pk %}" class="link link-primary">voir</a></td>
+            </tr>
+            {% empty %}<tr><td colspan="6" class="text-center py-6 opacity-60">Aucun export</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

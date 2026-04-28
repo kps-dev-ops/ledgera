@@ -1,0 +1,31 @@
+{% extends "imports_exports/pdf/base_pdf.html" %}
+{% block title %}CR {{ exercice.code }}{% endblock %}
+{% block doc_title %}Compte de résultat SYSCOHADA — Exercice {{ exercice.code }}{% endblock %}
+{% block content %}
+<h2>Charges</h2>
+<table>
+    <thead><tr><th>Code</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+    <tbody>
+        {% for p in charges %}
+        <tr><td>{{ p.code }}</td><td>{{ p.libelle }}</td><td class="num">{{ p.montant }}</td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total charges</td><td class="num">{{ total_charges }}</td></tr></tfoot>
+</table>
+
+<h2>Produits</h2>
+<table>
+    <thead><tr><th>Code</th><th>Libellé</th><th class="num">Montant</th></tr></thead>
+    <tbody>
+        {% for p in produits %}
+        <tr><td>{{ p.code }}</td><td>{{ p.libelle }}</td><td class="num">{{ p.montant }}</td></tr>
+        {% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="2">Total produits</td><td class="num">{{ total_produits }}</td></tr></tfoot>
+</table>
+
+<p style="margin-top: 12pt; font-weight: 700;">
+    Résultat net : <span class="num">{{ resultat_net }}</span>
+    {% if resultat_net >= 0 %}(bénéfice){% else %}(perte){% endif %}
+</p>
+{% endblock %}

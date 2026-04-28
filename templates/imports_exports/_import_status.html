@@ -1,0 +1,38 @@
+<div id="status-block" {% if job.statut not in "TERMINEERREUR" %}
+     hx-get="{% url 'imports_exports:import_status' job.pk %}"
+     hx-trigger="every 2s"
+     hx-swap="outerHTML"{% endif %}>
+    <div class="card bg-base-100 shadow mb-4">
+        <div class="card-body">
+            <div class="flex justify-between items-center">
+                <div>
+                    {% if job.statut == "EN_ATTENTE" %}<span class="badge badge-ghost">En attente…</span>
+                    {% elif job.statut == "EN_COURS" %}<span class="badge badge-warning">Import en cours…</span>
+                    {% elif job.statut == "TERMINE" %}<span class="badge badge-success">Terminé ✓ — {{ job.nb_pieces_creees }} pièces créées</span>
+                    {% elif job.statut == "ERREUR" %}<span class="badge badge-error">Erreur</span>
+                    {% endif %}
+                </div>
+                <div class="text-sm opacity-70">
+                    Lignes traitées : {{ job.nb_lignes_traitees }} — Pièces créées : {{ job.nb_pieces_creees }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if job.rapport.erreurs %}
+    <div class="card bg-base-100 shadow border-error border">
+        <div class="card-body">
+            <h2 class="card-title text-lg text-error">Rapport d'erreurs ({{ job.rapport.erreurs|length }})</h2>
+            <table class="table table-sm">
+                <thead><tr><th>Ligne</th><th>Motif</th></tr></thead>
+                <tbody>
+                    {% for e in job.rapport.erreurs %}
+                    <tr><td class="font-mono">{{ e.ligne }}</td><td>{{ e.motif }}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="text-sm opacity-70 mt-2">Aucune pièce n'a été créée (transaction annulée).</p>
+        </div>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,48 @@
+@page {
+    size: A4;
+    margin: 1.8cm 1.2cm 1.5cm 1.2cm;
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #666;
+    }
+    @top-left {
+        content: string(doc-title);
+        font-size: 9pt;
+        color: #666;
+    }
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 10pt;
+    color: #111;
+}
+
+h1.doc-title {
+    string-set: doc-title content();
+    font-size: 16pt;
+    color: #1b4332;
+    border-bottom: 2px solid #2d6a4f;
+    padding-bottom: 6pt;
+    margin-bottom: 12pt;
+}
+
+h2 {
+    font-size: 12pt;
+    color: #2d6a4f;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+}
+
+table { width: 100%; border-collapse: collapse; }
+table th, table td { padding: 4pt 6pt; border-bottom: 0.5pt solid #ddd; vertical-align: top; }
+table th { background: #f0f7f4; font-weight: 600; text-align: left; }
+table td.num, table th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; font-size: 9pt; }
+tfoot td { font-weight: 700; border-top: 1pt solid #1b4332; }
+
+.identite { margin-bottom: 12pt; font-size: 9pt; color: #666; }
+.identite strong { color: #111; }
+
+.equilibre-ok { color: #16a34a; }
+.equilibre-ko { color: #dc2626; }
