@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}TVA — Ledgera{% endblock %}
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg"><i data-lucide="percent"></i></div>
+  <div><h1 class="text-2xl font-bold tracking-tight leading-none">Déclarations TVA</h1>
+  <p class="text-sm opacity-60 mt-1">Calcul, liquidation et bordereaux</p></div>
+</div>
+
+<div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
+  <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+    <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Calculer</button>
+  </form>
+  {% if declaration %}
+  <div class="grid grid-cols-3 gap-4 mt-4">
+    <div><div class="text-xs uppercase opacity-50">Collectée</div><div class="text-lg font-bold font-mono tabular-nums">{{ declaration.tva_collectee }}</div></div>
+    <div><div class="text-xs uppercase opacity-50">Déductible</div><div class="text-lg font-bold font-mono tabular-nums">{{ declaration.tva_deductible }}</div></div>
+    <div><div class="text-xs uppercase opacity-50">{% if declaration.tva_nette < 0 %}Crédit{% else %}À payer{% endif %}</div>
+      <div class="text-lg font-bold font-mono tabular-nums {% if declaration.tva_nette < 0 %}text-warning{% else %}text-success{% endif %}">{{ declaration.tva_nette }}</div></div>
+  </div>
+  {% endif %}
+</div></div>
+
+<div class="card bg-base-100 border border-base-300 shadow-sm"><div class="card-body p-0">
+  <div class="overflow-x-auto"><table class="table table-zebra">
+    <thead><tr class="text-xs uppercase"><th>Période</th><th class="text-right">Collectée</th><th class="text-right">Déductible</th><th class="text-right">Nette</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+    {% for d in declarations %}
+      <tr class="hover">
+        <td class="font-mono">{{ d.periode_num }}/{{ d.annee }}</td>
+        <td class="text-right font-mono tabular-nums">{{ d.tva_collectee }}</td>
+        <td class="text-right font-mono tabular-nums">{{ d.tva_deductible }}</td>
+        <td class="text-right font-mono tabular-nums font-semibold">{{ d.tva_nette }}</td>
+        <td>{% if d.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>{% else %}<span class="badge badge-ghost">Brouillon</span>{% endif %}</td>
+        <td class="text-right">
+          {% if d.statut != "VALIDEE" %}<a href="{% url 'fiscal:liquider' d.pk %}" class="btn btn-ghost btn-xs">Liquider</a>{% endif %}
+          <a href="{% url 'fiscal:bordereau' d.pk %}" class="btn btn-ghost btn-xs">PDF</a>
+        </td>
+      </tr>
+    {% empty %}<tr><td colspan="6" class="text-center py-12 opacity-50">Aucune déclaration.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div></div>
+{% endblock %}

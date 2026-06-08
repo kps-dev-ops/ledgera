@@ -11,6 +11,7 @@ urlpatterns = [
     path("compta/", include("apps.comptabilite.urls")),
     path("compta/immos/", include("apps.immobilisations.urls")),
     path("compta/banque/", include("apps.banque.urls")),
+    path("compta/fiscal/", include("apps.fiscal.urls")),
     path("tiers/", include("apps.tiers.urls")),
     path("etats/", include("apps.etats.urls")),
     path("io/", include("apps.imports_exports.urls")),
