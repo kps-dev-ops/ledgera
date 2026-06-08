@@ -191,3 +191,79 @@ def init_exercice_courant(annee: int = 2026) -> Exercice:
     for mois in range(1, 13):
         Periode.objects.get_or_create(exercice=exercice, mois=mois)
     return exercice
+
+
+@transaction.atomic
+def cloturer_exercice(exercice: Exercice, user, compte_report: str = "12") -> PieceComptable:
+    """Clôture R9 : génère les à-nouveaux dans l'exercice suivant et verrouille
+    l'exercice clos. Refuse s'il reste des brouillards ou si déjà clôturé.
+    """
+    from datetime import date
+
+    if exercice.statut == "CLOTURE":
+        raise ValueError("Exercice déjà clôturé")
+    nb_brouillards = PieceComptable.objects.filter(exercice=exercice, statut="BROUILLARD").count()
+    if nb_brouillards:
+        raise ValueError(f"{nb_brouillards} pièce(s) en brouillard à valider ou supprimer avant clôture")
+
+    report, _ = CompteComptable.objects.get_or_create(
+        numero=compte_report,
+        defaults={"libelle": "Report à nouveau", "classe": 1, "sens": "MIXTE"},
+    )
+
+    annee_suivante = exercice.date_fin.year + 1
+    exercice_suivant, _ = Exercice.objects.get_or_create(
+        code=str(annee_suivante),
+        defaults={
+            "date_debut": date(annee_suivante, 1, 1),
+            "date_fin": date(annee_suivante, 12, 31),
+            "exercice_precedent": exercice,
+        },
+    )
+    for mois in range(1, 13):
+        Periode.objects.get_or_create(exercice=exercice_suivant, mois=mois)
+
+    soldes = (
+        LigneEcriture.objects.filter(
+            piece__exercice=exercice, piece__statut="VALIDEE", compte__classe__lte=5
+        )
+        .values("compte_id", "tiers_id")
+        .annotate(d=Sum("debit"), c=Sum("credit"))
+    )
+
+    journal_an = Journal.objects.get(code="AN")
+    piece = PieceComptable.objects.create(
+        journal=journal_an, exercice=exercice_suivant, date_piece=exercice_suivant.date_debut,
+        reference=f"AN-{annee_suivante}", libelle=f"À-nouveaux {annee_suivante} (clôture {exercice.code})",
+        statut="BROUILLARD", auteur=user,
+    )
+    numero_ligne = 1
+    total = Decimal("0.00")
+    for s in soldes:
+        solde = (s["d"] or Decimal("0.00")) - (s["c"] or Decimal("0.00"))
+        if solde == 0:
+            continue
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=numero_ligne, compte_id=s["compte_id"], tiers_id=s["tiers_id"],
+            libelle="À-nouveau", debit=solde if solde > 0 else Decimal("0.00"),
+            credit=-solde if solde < 0 else Decimal("0.00"),
+        )
+        numero_ligne += 1
+        total += solde
+
+    if total != 0:
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=numero_ligne, compte=report,
+            libelle="Report à nouveau (résultat)",
+            debit=-total if total < 0 else Decimal("0.00"),
+            credit=total if total > 0 else Decimal("0.00"),
+        )
+
+    valider_piece(piece, user)
+
+    Periode.objects.filter(exercice=exercice).update(statut="CLOTUREE")
+    exercice.statut = "CLOTURE"
+    exercice.date_cloture = timezone.now()
+    exercice.cloture_par = user
+    exercice.save(update_fields=["statut", "date_cloture", "cloture_par"])
+    return piece
