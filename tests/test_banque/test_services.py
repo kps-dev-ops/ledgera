@@ -143,3 +143,15 @@ class TestPointageManuel(BanqueTestBase):
         r2 = self._releve([{"date_operation": date(2026, 1, 15), "libelle": "B", "montant": Decimal("-300.00")}])
         with pytest.raises(ValueError):
             pointer_manuellement(r2.lignes.first(), ecr)
+
+
+class TestCloisonnement(BanqueTestBase):
+    def test_table_releve_absente_du_schema_public(self):
+        from django.db import connection
+        from django_tenants.utils import schema_context
+
+        self._releve([{"date_operation": date(2026, 1, 10), "libelle": "X", "montant": Decimal("10.00")}])
+        with schema_context("public"):
+            with connection.cursor() as c:
+                c.execute("SELECT to_regclass('public.banque_relevebancaire')")
+                assert c.fetchone()[0] is None
