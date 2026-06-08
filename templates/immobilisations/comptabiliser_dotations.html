@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Comptabiliser les dotations</h1>
+{% if fait %}
+  {% if piece %}
+    <div class="alert alert-success">Pièce OD générée : {{ piece }}.</div>
+  {% else %}
+    <div class="alert alert-info">Aucune dotation à comptabiliser pour cette période.</div>
+  {% endif %}
+{% endif %}
+<form method="post" class="flex gap-2 items-end">
+  {% csrf_token %}
+  <label class="form-control">
+    <span class="label-text">Exercice</span>
+    <select name="exercice" class="select select-bordered">
+      {% for e in exercices %}<option value="{{ e.pk }}">{{ e.code }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="form-control">
+    <span class="label-text">Mois</span>
+    <input type="number" name="mois" min="1" max="12" value="1" class="input input-bordered w-24">
+  </label>
+  <button type="submit" class="btn btn-primary">Comptabiliser</button>
+</form>
+{% endblock %}

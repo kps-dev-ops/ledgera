@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-xl font-semibold">{{ immo.code }} — {{ immo.designation }}</h1>
+<p class="mb-4"><span class="badge">{{ immo.get_statut_display }}</span>
+  Coût {{ immo.cout_acquisition }} · durée {{ immo.duree }} ans · {{ immo.get_mode_amortissement_display }}</p>
+
+{% if immo.statut == "EN_SERVICE" %}
+<form method="post" action="{% url 'immobilisations:immo_ceder' immo.pk %}" class="mb-4">
+  {% csrf_token %}
+  {{ cession_form.as_p }}
+  <button type="submit" class="btn btn-warning">Céder</button>
+</form>
+{% endif %}
+
+<h2 class="font-semibold mt-4">Plan d'amortissement</h2>
+<table class="table table-sm">
+  <thead><tr><th>Année</th><th>Mois</th><th>Dotation</th><th>Cumul</th><th>VNC</th><th>Statut</th></tr></thead>
+  <tbody>
+  {% for d in dotations %}
+    <tr><td>{{ d.annee }}</td><td>{{ d.mois }}</td>
+      <td class="font-mono tabular-nums">{{ d.montant }}</td>
+      <td class="font-mono tabular-nums">{{ d.cumul }}</td>
+      <td class="font-mono tabular-nums">{{ d.vnc }}</td>
+      <td>{{ d.get_statut_display }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Immobilisation</h1>
+<form method="post">
+  {% csrf_token %}
+  <div hx-get="{% url 'immobilisations:comptes_categorie' %}"
+       hx-trigger="change from:#id_categorie" hx-target="#comptes-defaut" hx-include="#id_categorie">
+  </div>
+  {{ form|crispy }}
+  <div id="comptes-defaut"></div>
+  <button type="submit" class="btn btn-primary mt-4">Enregistrer</button>
+</form>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-xl font-semibold">Immobilisations</h1>
+  <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary">Nouvelle immobilisation</a>
+</div>
+<table class="table">
+  <thead><tr><th>Code</th><th>Désignation</th><th>Coût</th><th>Statut</th></tr></thead>
+  <tbody>
+  {% for immo in immobilisations %}
+    <tr>
+      <td><a class="link" href="{% url 'immobilisations:immo_detail' immo.pk %}">{{ immo.code }}</a></td>
+      <td>{{ immo.designation }}</td>
+      <td class="font-mono tabular-nums">{{ immo.cout_acquisition }}</td>
+      <td><span class="badge">{{ immo.get_statut_display }}</span></td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">Aucune immobilisation.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

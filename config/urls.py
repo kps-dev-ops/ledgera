@@ -9,6 +9,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("allauth.urls")),
     path("compta/", include("apps.comptabilite.urls")),
+    path("compta/immos/", include("apps.immobilisations.urls")),
     path("tiers/", include("apps.tiers.urls")),
     path("etats/", include("apps.etats.urls")),
     path("io/", include("apps.imports_exports.urls")),
