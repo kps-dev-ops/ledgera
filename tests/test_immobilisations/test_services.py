@@ -14,7 +14,7 @@ from apps.comptabilite.models import (
     PieceComptable,
 )
 from apps.immobilisations.models import CategorieImmobilisation, Dotation, Immobilisation
-from apps.immobilisations.services import generer_plan_amortissement, next_code_immobilisation
+from apps.immobilisations.services import comptabiliser_dotations, generer_plan_amortissement, next_code_immobilisation
 
 
 class ImmoTestBase(TenantTestCase):
@@ -89,3 +89,24 @@ class TestGenerationPlan(ImmoTestBase):
         generer_plan_amortissement(immo)
         generer_plan_amortissement(immo)
         assert Dotation.objects.filter(immobilisation=immo).count() == 60
+
+
+class TestComptabilisationDotations(ImmoTestBase):
+    def test_genere_piece_od_equilibree_et_marque_comptabilisee(self):
+        immo = self._immo()
+        generer_plan_amortissement(immo)
+        piece = comptabiliser_dotations(self.exercice, 1, self.user)
+        assert piece is not None
+        assert piece.statut == "VALIDEE"
+        assert piece.total_debit == piece.total_credit == Decimal("200.00")
+        lignes = LigneEcriture.objects.filter(piece=piece)
+        assert lignes.filter(compte=self.c6813, debit=Decimal("200.00")).exists()
+        assert lignes.filter(compte=self.c2844, credit=Decimal("200.00")).exists()
+        d = Dotation.objects.get(immobilisation=immo, annee=2026, mois=1)
+        assert d.statut == "COMPTABILISEE" and d.piece_generee_id == piece.id
+
+    def test_rien_a_comptabiliser_retourne_none(self):
+        immo = self._immo()
+        generer_plan_amortissement(immo)
+        comptabiliser_dotations(self.exercice, 1, self.user)
+        assert comptabiliser_dotations(self.exercice, 1, self.user) is None  # idempotent
