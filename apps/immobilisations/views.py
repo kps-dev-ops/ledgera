@@ -11,6 +11,7 @@ from apps.comptabilite.models import Exercice
 from .exports import tableau_immobilisations_xlsx
 from .forms import CessionForm, ImmobilisationForm
 from .models import CategorieImmobilisation, Immobilisation
+from .selectors import tableau_immobilisations
 from .services import (
     ceder_immobilisation,
     comptabiliser_dotations,
@@ -23,6 +24,25 @@ class ImmobilisationListView(LoginRequiredMixin, ListView):
     model = Immobilisation
     template_name = "immobilisations/immobilisation_list.html"
     context_object_name = "immobilisations"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        today = _date.today()
+        par_code = {ligne["code"]: ligne for ligne in tableau_immobilisations(today)}
+        rows = []
+        for immo in ctx["immobilisations"]:
+            info = par_code.get(immo.code, {})
+            cumul = info.get("cumul_amortissements", 0)
+            vnc = info.get("vnc", immo.cout_acquisition)
+            taux = (cumul / immo.cout_acquisition * 100) if immo.cout_acquisition else 0
+            rows.append({"immo": immo, "cumul": cumul, "vnc": vnc, "taux": taux})
+        ctx["rows"] = rows
+        ctx["total_brut"] = sum((r["immo"].cout_acquisition for r in rows), 0)
+        ctx["total_cumul"] = sum((r["cumul"] for r in rows), 0)
+        ctx["total_vnc"] = sum((r["vnc"] for r in rows), 0)
+        ctx["nb_en_service"] = sum(1 for r in rows if r["immo"].statut == "EN_SERVICE")
+        ctx["nb_sorties"] = sum(1 for r in rows if r["immo"].statut in ("CEDEE", "REBUT"))
+        return ctx
 
 
 class ImmobilisationCreateView(LoginRequiredMixin, CreateView):
@@ -56,8 +76,19 @@ class ImmobilisationDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["dotations"] = self.object.dotations.all()
+        immo = self.object
+        dotations = list(immo.dotations.all())
+        ctx["dotations"] = dotations
         ctx["cession_form"] = CessionForm()
+        cumul = sum((d.montant for d in dotations if d.statut == "COMPTABILISEE"), 0)
+        ctx["cumul_comptabilise"] = cumul
+        ctx["vnc_actuelle"] = immo.cout_acquisition - cumul
+        ctx["base_amortissable"] = immo.cout_acquisition - immo.valeur_residuelle
+        ctx["taux_amorti"] = (
+            (cumul / immo.cout_acquisition * 100) if immo.cout_acquisition else 0
+        )
+        ctx["nb_comptabilisees"] = sum(1 for d in dotations if d.statut == "COMPTABILISEE")
+        ctx["nb_dotations"] = len(dotations)
         return ctx
 
 

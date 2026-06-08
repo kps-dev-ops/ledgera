@@ -1,25 +1,154 @@
 {% extends "base.html" %}
+{% block title %}Immobilisations — Ledgera{% endblock %}
+
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-  <h1 class="text-xl font-semibold">Immobilisations</h1>
-  <div class="flex gap-2">
-    <a href="{% url 'immobilisations:export_xlsx' %}" class="btn btn-ghost">Export Excel</a>
-    <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary">Nouvelle immobilisation</a>
+<div x-data="{ q: '', statut: 'TOUS' }">
+
+  {# ---------- En-tête ---------- #}
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg">
+        <i data-lucide="building-2"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight leading-none">Immobilisations</h1>
+        <p class="text-sm opacity-60 mt-1">Suivi des biens, amortissements et cessions</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'immobilisations:comptabiliser' %}" class="btn btn-ghost btn-sm gap-2">
+        <i data-lucide="calculator"></i> Comptabiliser
+      </a>
+      <a href="{% url 'immobilisations:export_xlsx' %}" class="btn btn-ghost btn-sm gap-2">
+        <i data-lucide="file-spreadsheet"></i> Export
+      </a>
+      <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary btn-sm gap-2 shadow">
+        <i data-lucide="plus"></i> Nouvelle immobilisation
+      </a>
+    </div>
   </div>
+
+  {# ---------- KPI ---------- #}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-4">
+        <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+          <i data-lucide="banknote"></i> Valeur brute
+        </div>
+        <div class="text-2xl font-bold font-mono tabular-nums mt-1">{{ total_brut }}</div>
+        <div class="text-xs opacity-50">{{ request.tenant.devise|default:"XOF" }}</div>
+      </div>
+    </div>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-4">
+        <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+          <i data-lucide="trending-down"></i> Amortissements
+        </div>
+        <div class="text-2xl font-bold font-mono tabular-nums mt-1 text-warning">{{ total_cumul }}</div>
+        <div class="text-xs opacity-50">cumul comptabilisé</div>
+      </div>
+    </div>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-4">
+        <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+          <i data-lucide="wallet"></i> Valeur nette
+        </div>
+        <div class="text-2xl font-bold font-mono tabular-nums mt-1 text-success">{{ total_vnc }}</div>
+        <div class="text-xs opacity-50">VNC à ce jour</div>
+      </div>
+    </div>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-4">
+        <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+          <i data-lucide="layers"></i> Parc
+        </div>
+        <div class="text-2xl font-bold tabular-nums mt-1">{{ nb_en_service }}</div>
+        <div class="text-xs opacity-50">en service · {{ nb_sorties }} sortie{{ nb_sorties|pluralize }}</div>
+      </div>
+    </div>
+  </div>
+
+  {# ---------- Liste ---------- #}
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+      <div class="flex flex-wrap items-center gap-3 p-4 border-b border-base-200">
+        <label class="input input-bordered input-sm flex items-center gap-2 w-full max-w-xs">
+          <i data-lucide="search" class="opacity-50"></i>
+          <input type="text" x-model="q" placeholder="Rechercher (code, désignation)…" class="grow bg-transparent">
+        </label>
+        <div class="join">
+          <button class="btn btn-xs join-item" :class="statut === 'TOUS' && 'btn-active'" @click="statut = 'TOUS'">Tous</button>
+          <button class="btn btn-xs join-item" :class="statut === 'EN_SERVICE' && 'btn-active'" @click="statut = 'EN_SERVICE'">En service</button>
+          <button class="btn btn-xs join-item" :class="statut === 'CEDEE' && 'btn-active'" @click="statut = 'CEDEE'">Cédées</button>
+          <button class="btn btn-xs join-item" :class="statut === 'REBUT' && 'btn-active'" @click="statut = 'REBUT'">Rebut</button>
+        </div>
+        <span class="ml-auto text-xs opacity-50">{{ rows|length }} immobilisation{{ rows|length|pluralize }}</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr class="text-xs uppercase tracking-wide">
+              <th>Code</th>
+              <th>Désignation</th>
+              <th class="text-right">Coût</th>
+              <th class="text-right">VNC</th>
+              <th class="w-40">Amorti</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in rows %}
+            <tr class="hover"
+                x-show="(statut === 'TOUS' || statut === '{{ r.immo.statut }}')
+                        && (q === '' || '{{ r.immo.code|lower|escapejs }} {{ r.immo.designation|lower|escapejs }}'.includes(q.toLowerCase()))">
+              <td>
+                <a href="{% url 'immobilisations:immo_detail' r.immo.pk %}"
+                   class="font-mono font-semibold text-primary hover:underline">{{ r.immo.code }}</a>
+              </td>
+              <td>
+                <div class="font-medium">{{ r.immo.designation }}</div>
+                <div class="text-xs opacity-50">{{ r.immo.categorie.libelle }} · {{ r.immo.get_mode_amortissement_display }}</div>
+              </td>
+              <td class="text-right font-mono tabular-nums">{{ r.immo.cout_acquisition }}</td>
+              <td class="text-right font-mono tabular-nums font-semibold">{{ r.vnc }}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-warning w-20" value="{{ r.taux|floatformat:0 }}" max="100"></progress>
+                  <span class="text-xs tabular-nums opacity-70">{{ r.taux|floatformat:0 }}%</span>
+                </div>
+              </td>
+              <td>{% include "immobilisations/partials/statut_badge.html" with statut=r.immo.statut label=r.immo.get_statut_display %}</td>
+              <td class="text-right">
+                <a href="{% url 'immobilisations:immo_detail' r.immo.pk %}" class="btn btn-ghost btn-xs btn-square">
+                  <i data-lucide="chevron-right"></i>
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7">
+                <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                  <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                    <i data-lucide="building-2"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Aucune immobilisation</p>
+                    <p class="text-sm opacity-50">Créez votre première fiche pour générer son plan d'amortissement.</p>
+                  </div>
+                  <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary btn-sm gap-2">
+                    <i data-lucide="plus"></i> Nouvelle immobilisation
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </div>
-<table class="table">
-  <thead><tr><th>Code</th><th>Désignation</th><th>Coût</th><th>Statut</th></tr></thead>
-  <tbody>
-  {% for immo in immobilisations %}
-    <tr>
-      <td><a class="link" href="{% url 'immobilisations:immo_detail' immo.pk %}">{{ immo.code }}</a></td>
-      <td>{{ immo.designation }}</td>
-      <td class="font-mono tabular-nums">{{ immo.cout_acquisition }}</td>
-      <td><span class="badge">{{ immo.get_statut_display }}</span></td>
-    </tr>
-  {% empty %}
-    <tr><td colspan="4">Aucune immobilisation.</td></tr>
-  {% endfor %}
-  </tbody>
-</table>
 {% endblock %}

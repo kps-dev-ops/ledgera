@@ -1,0 +1,4 @@
+{% if statut == "EN_SERVICE" %}<span class="badge badge-success gap-1 font-medium"><i data-lucide="circle-check"></i>{{ label }}</span>
+{% elif statut == "EN_COURS" %}<span class="badge badge-info gap-1 font-medium"><i data-lucide="clock"></i>{{ label }}</span>
+{% elif statut == "CEDEE" %}<span class="badge badge-neutral gap-1 font-medium"><i data-lucide="arrow-left-right"></i>{{ label }}</span>
+{% else %}<span class="badge badge-error gap-1 font-medium"><i data-lucide="trash-2"></i>{{ label }}</span>{% endif %}

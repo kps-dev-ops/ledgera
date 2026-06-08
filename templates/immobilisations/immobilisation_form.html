@@ -1,14 +1,52 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% block title %}{% if form.instance.pk %}Modifier{% else %}Nouvelle{% endif %} immobilisation — Ledgera{% endblock %}
+
 {% block content %}
-<h1 class="text-xl font-semibold mb-4">Immobilisation</h1>
-<form method="post">
-  {% csrf_token %}
-  <div hx-get="{% url 'immobilisations:comptes_categorie' %}"
-       hx-trigger="change from:#id_categorie" hx-target="#comptes-defaut" hx-include="#id_categorie">
+<div class="max-w-3xl mx-auto">
+
+  <div class="text-sm breadcrumbs opacity-60 mb-2">
+    <ul>
+      <li><a href="{% url 'immobilisations:immo_list' %}">Immobilisations</a></li>
+      <li>{% if form.instance.pk %}{{ form.instance.code }}{% else %}Nouvelle{% endif %}</li>
+    </ul>
   </div>
-  {{ form|crispy }}
-  <div id="comptes-defaut"></div>
-  <button type="submit" class="btn btn-primary mt-4">Enregistrer</button>
-</form>
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg">
+      <i data-lucide="{% if form.instance.pk %}pencil{% else %}plus{% endif %}"></i>
+    </div>
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight leading-none">
+        {% if form.instance.pk %}Modifier l'immobilisation{% else %}Nouvelle immobilisation{% endif %}
+      </h1>
+      <p class="text-sm opacity-60 mt-1">Le plan d'amortissement est généré automatiquement à l'enregistrement.</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {# Déclencheur HTMX : remplit l'aperçu des comptes au changement de catégorie #}
+    <div hx-get="{% url 'immobilisations:comptes_categorie' %}"
+         hx-trigger="change from:#id_categorie"
+         hx-target="#comptes-defaut"
+         hx-include="#id_categorie"></div>
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-6">
+        {{ form|crispy }}
+        <div id="comptes-defaut" class="mt-2"></div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 mt-4">
+      <a href="{% url 'immobilisations:immo_list' %}" class="btn btn-ghost">Annuler</a>
+      <button type="submit" class="btn btn-primary gap-2 shadow">
+        <i data-lucide="save"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+
+</div>
 {% endblock %}

@@ -1,4 +1,13 @@
-<div class="text-sm opacity-70">
-  Comptes par défaut : immo {{ c.compte_immo.numero }} · amort. {{ c.compte_amortissement.numero }}
-  · dotation {{ c.compte_dotation.numero }} — durée {{ c.duree_defaut }} ans ({{ c.get_mode_defaut_display }})
+<div class="rounded-lg bg-base-200/60 border border-base-300 p-3 text-sm">
+  <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60 mb-2">
+    <i data-lucide="info"></i> Paramètres par défaut de la catégorie
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <span class="badge badge-outline gap-1"><i data-lucide="box"></i> Immo {{ c.compte_immo.numero }}</span>
+    <span class="badge badge-outline gap-1"><i data-lucide="trending-down"></i> Amort. {{ c.compte_amortissement.numero }}</span>
+    <span class="badge badge-outline gap-1"><i data-lucide="receipt"></i> Dotation {{ c.compte_dotation.numero }}</span>
+    <span class="badge badge-ghost gap-1"><i data-lucide="calendar-clock"></i> {{ c.duree_defaut }} ans · {{ c.get_mode_defaut_display }}</span>
+  </div>
+  <p class="text-xs opacity-50 mt-2">Ces valeurs pré-remplissent les champs ci-dessus ; tu peux les ajuster.</p>
 </div>
+<script>lucide.createIcons();</script>
