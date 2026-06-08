@@ -6,7 +6,7 @@ from django.db import connection
 from django_tenants.test.cases import TenantTestCase
 
 from apps.banque.models import CompteBancaire, LigneReleve, ReleveBancaire
-from apps.banque.services import creer_releve_depuis_lignes
+from apps.banque.services import creer_releve_depuis_lignes, pointer_automatiquement
 from apps.comptabilite.models import (
     CompteComptable,
     Exercice,
@@ -94,3 +94,26 @@ class TestImportReleve(BanqueTestBase):
         assert releve.lignes.count() == 2
         assert releve.lignes.filter(statut="NON_POINTEE").count() == 2
         assert releve.lignes.get(reference_banque="R1").montant == Decimal("500.00")
+
+
+class TestPointageAuto(BanqueTestBase):
+    def test_pointe_une_ligne_concordante(self):
+        ecr = self._ecriture_banque(Decimal("500.00"), "D", date(2026, 1, 10), "VIR CLIENT")
+        releve = self._releve([
+            {"date_operation": date(2026, 1, 11), "libelle": "VIR CLIENT", "montant": Decimal("500.00"), "reference_banque": "R1"},
+        ])
+        n = pointer_automatiquement(releve)
+        assert n == 1
+        ligne = releve.lignes.get(reference_banque="R1")
+        assert ligne.statut == "POINTEE_AUTO"
+        assert ligne.ligne_ecriture_pointee_id == ecr.id
+        ecr.refresh_from_db()
+        assert ecr.pointee is True
+
+    def test_ne_pointe_pas_si_aucun_candidat(self):
+        self._ecriture_banque(Decimal("500.00"), "D", date(2026, 3, 1))  # hors fenêtre
+        releve = self._releve([
+            {"date_operation": date(2026, 1, 10), "libelle": "X", "montant": Decimal("500.00")},
+        ])
+        assert pointer_automatiquement(releve) == 0
+        assert releve.lignes.first().statut == "NON_POINTEE"

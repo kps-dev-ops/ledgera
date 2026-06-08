@@ -6,6 +6,9 @@ from io import TextIOWrapper
 from django.db import transaction
 from openpyxl import load_workbook
 
+from apps.comptabilite.models import LigneEcriture
+
+from .matching import choisir_ecriture
 from .models import LigneReleve, ReleveBancaire
 
 
@@ -79,3 +82,31 @@ def lire_lignes_csv(fichier) -> list[dict]:
             "reference_banque": row.get("reference", ""),
         })
     return lignes
+
+
+@transaction.atomic
+def pointer_automatiquement(releve, fenetre_jours: int = 5) -> int:
+    """Pointe les LigneReleve NON_POINTEE avec les écritures du compte bancaire.
+    Retourne le nombre de lignes pointées.
+    """
+    compte = releve.compte_bancaire.compte_comptable
+    n = 0
+    for ligne in releve.lignes.filter(statut="NON_POINTEE"):
+        candidats = [
+            {
+                "id": e.id, "debit": e.debit, "credit": e.credit,
+                "date": e.date_operation or e.piece.date_piece, "libelle": e.libelle,
+            }
+            for e in LigneEcriture.objects.select_related("piece").filter(
+                compte=compte, pointee=False, piece__statut="VALIDEE"
+            )
+        ]
+        choix = choisir_ecriture(ligne.montant, ligne.date_operation, ligne.libelle, candidats, fenetre_jours)
+        if choix is None:
+            continue
+        LigneEcriture.objects.filter(pk=choix).update(pointee=True)
+        ligne.ligne_ecriture_pointee_id = choix
+        ligne.statut = "POINTEE_AUTO"
+        ligne.save(update_fields=["ligne_ecriture_pointee", "statut"])
+        n += 1
+    return n
