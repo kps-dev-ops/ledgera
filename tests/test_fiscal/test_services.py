@@ -16,6 +16,8 @@ from apps.comptabilite.models import (
 from apps.comptabilite.services import valider_piece
 from apps.fiscal.models import ConfigurationTVA, DeclarationTVA
 from apps.fiscal.services import calculer_tva, creer_declaration_tva
+from apps.comptabilite.models import LigneEcriture as _LE
+from apps.fiscal.services import comptabiliser_liquidation
 
 
 class FiscalTestBase(TenantTestCase):
@@ -88,3 +90,25 @@ class TestCreerDeclaration(FiscalTestBase):
         assert decl.date_debut == date(2026, 1, 1) and decl.date_fin == date(2026, 1, 31)
         assert decl.tva_collectee == Decimal("200.00") and decl.tva_nette == Decimal("200.00")
         assert decl.statut == "BROUILLON"
+
+
+class TestLiquidation(FiscalTestBase):
+    def test_liquidation_equilibree_tva_a_payer(self):
+        self._piece([(self.c521, "1200.00", "0.00"), (self.c701, "0.00", "1000.00"), (self.c4431, "0.00", "200.00")])
+        self._piece([(self.c601, "500.00", "0.00"), (self.c4452, "100.00", "0.00"), (self.c521, "0.00", "600.00")])
+        decl = creer_declaration_tva(self.config, 2026, 1, self.user)
+        piece = comptabiliser_liquidation(decl, self.user)
+        decl.refresh_from_db()
+        assert decl.statut == "VALIDEE" and decl.piece_liquidation_id == piece.id
+        assert piece.statut == "VALIDEE" and piece.total_debit == piece.total_credit
+        assert _LE.objects.filter(piece=piece, compte=self.c4441, credit=Decimal("100.00")).exists()
+        assert _LE.objects.filter(piece=piece, compte=self.c4431, debit=Decimal("200.00")).exists()
+        assert _LE.objects.filter(piece=piece, compte=self.c4452, credit=Decimal("100.00")).exists()
+
+    def test_refuse_reliquidation(self):
+        import pytest
+        self._piece([(self.c521, "1200.00", "0.00"), (self.c701, "0.00", "1000.00"), (self.c4431, "0.00", "200.00")])
+        decl = creer_declaration_tva(self.config, 2026, 1, self.user)
+        comptabiliser_liquidation(decl, self.user)
+        with pytest.raises(ValueError):
+            comptabiliser_liquidation(decl, self.user)

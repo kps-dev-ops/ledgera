@@ -5,6 +5,9 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
+from apps.comptabilite.models import Exercice, LigneEcriture, PieceComptable
+from apps.comptabilite.services import valider_piece
+
 from .models import DeclarationTVA
 
 
@@ -52,3 +55,71 @@ def creer_declaration_tva(config, annee: int, periode_num: int, user) -> Declara
     decl.tva_nette = res["tva_nette"]
     decl.save()
     return decl
+
+
+def _soldes_par_compte(comptes, date_debut, date_fin, sens):
+    rows = (
+        LigneEcriture.objects.filter(
+            compte__in=comptes, piece__statut="VALIDEE",
+            piece__date_piece__gte=date_debut, piece__date_piece__lte=date_fin,
+        )
+        .values("compte_id")
+        .annotate(d=Sum("debit"), c=Sum("credit"))
+    )
+    out = []
+    for r in rows:
+        d = r["d"] or Decimal("0.00")
+        c = r["c"] or Decimal("0.00")
+        solde = (c - d) if sens == "CREDITEUR" else (d - c)
+        if solde != 0:
+            out.append((r["compte_id"], solde))
+    return out
+
+
+@transaction.atomic
+def comptabiliser_liquidation(declaration, user) -> PieceComptable:
+    if declaration.statut == "VALIDEE":
+        raise ValueError("Déclaration déjà liquidée")
+    config = declaration.configuration
+    exercice = Exercice.objects.get(
+        date_debut__lte=declaration.date_fin, date_fin__gte=declaration.date_fin
+    )
+    piece = PieceComptable.objects.create(
+        journal=config.journal, exercice=exercice, date_piece=declaration.date_fin,
+        reference=f"TVA-{declaration.annee}-{declaration.periode_num:02d}",
+        libelle=f"Liquidation TVA {declaration.periode_num:02d}/{declaration.annee}",
+        statut="BROUILLARD", auteur=user,
+    )
+    n = 1
+    for compte_id, solde in _soldes_par_compte(
+        config.comptes_collectee.all(), declaration.date_debut, declaration.date_fin, "CREDITEUR"
+    ):
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=n, compte_id=compte_id,
+            libelle="Solde TVA collectée", debit=solde, credit=Decimal("0.00"),
+        )
+        n += 1
+    for compte_id, solde in _soldes_par_compte(
+        config.comptes_deductible.all(), declaration.date_debut, declaration.date_fin, "DEBITEUR"
+    ):
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=n, compte_id=compte_id,
+            libelle="Solde TVA déductible", debit=Decimal("0.00"), credit=solde,
+        )
+        n += 1
+    nette = declaration.tva_nette
+    if nette > 0:
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=n, compte=config.compte_tva_due,
+            libelle="TVA due", debit=Decimal("0.00"), credit=nette,
+        )
+    elif nette < 0:
+        LigneEcriture.objects.create(
+            piece=piece, numero_ligne=n, compte=config.compte_credit_tva,
+            libelle="Crédit de TVA", debit=-nette, credit=Decimal("0.00"),
+        )
+    valider_piece(piece, user)
+    declaration.statut = "VALIDEE"
+    declaration.piece_liquidation = piece
+    declaration.save(update_fields=["statut", "piece_liquidation"])
+    return piece
