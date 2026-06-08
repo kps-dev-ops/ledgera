@@ -85,6 +85,34 @@ def lire_lignes_csv(fichier) -> list[dict]:
 
 
 @transaction.atomic
+def pointer_manuellement(ligne_releve, ligne_ecriture):
+    """Lie manuellement une ligne de relevé à une écriture. Refuse si déjà pointée
+    ou si l'écriture n'est pas sur le compte bancaire du relevé.
+    """
+    compte = ligne_releve.releve.compte_bancaire.compte_comptable_id
+    if ligne_ecriture.compte_id != compte:
+        raise ValueError("L'écriture n'appartient pas au compte bancaire du relevé")
+    # Re-fetch with lock to get the current DB state and prevent race conditions
+    ecriture_db = LigneEcriture.objects.select_for_update().get(pk=ligne_ecriture.pk)
+    if ecriture_db.pointee:
+        raise ValueError("Écriture déjà pointée")
+    LigneEcriture.objects.filter(pk=ligne_ecriture.pk).update(pointee=True)
+    ligne_releve.ligne_ecriture_pointee = ligne_ecriture
+    ligne_releve.statut = "POINTEE_MANUEL"
+    ligne_releve.save(update_fields=["ligne_ecriture_pointee", "statut"])
+
+
+@transaction.atomic
+def depointer(ligne_releve):
+    """Annule le pointage d'une ligne de relevé."""
+    if ligne_releve.ligne_ecriture_pointee_id:
+        LigneEcriture.objects.filter(pk=ligne_releve.ligne_ecriture_pointee_id).update(pointee=False)
+    ligne_releve.ligne_ecriture_pointee = None
+    ligne_releve.statut = "NON_POINTEE"
+    ligne_releve.save(update_fields=["ligne_ecriture_pointee", "statut"])
+
+
+@transaction.atomic
 def pointer_automatiquement(releve, fenetre_jours: int = 5) -> int:
     """Pointe les LigneReleve NON_POINTEE avec les écritures du compte bancaire.
     Retourne le nombre de lignes pointées.

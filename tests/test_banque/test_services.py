@@ -6,7 +6,7 @@ from django.db import connection
 from django_tenants.test.cases import TenantTestCase
 
 from apps.banque.models import CompteBancaire, LigneReleve, ReleveBancaire
-from apps.banque.services import creer_releve_depuis_lignes, pointer_automatiquement
+from apps.banque.services import creer_releve_depuis_lignes, depointer, pointer_automatiquement, pointer_manuellement
 from apps.comptabilite.models import (
     CompteComptable,
     Exercice,
@@ -117,3 +117,29 @@ class TestPointageAuto(BanqueTestBase):
         ])
         assert pointer_automatiquement(releve) == 0
         assert releve.lignes.first().statut == "NON_POINTEE"
+
+
+class TestPointageManuel(BanqueTestBase):
+    def test_pointer_puis_depointer(self):
+        ecr = self._ecriture_banque(Decimal("300.00"), "C", date(2026, 1, 15), "LOYER")
+        releve = self._releve([
+            {"date_operation": date(2026, 1, 15), "libelle": "PRLV LOYER", "montant": Decimal("-300.00"), "reference_banque": "R9"},
+        ])
+        ligne = releve.lignes.get(reference_banque="R9")
+        pointer_manuellement(ligne, ecr)
+        ligne.refresh_from_db(); ecr.refresh_from_db()
+        assert ligne.statut == "POINTEE_MANUEL" and ligne.ligne_ecriture_pointee_id == ecr.id
+        assert ecr.pointee is True
+        depointer(ligne)
+        ligne.refresh_from_db(); ecr.refresh_from_db()
+        assert ligne.statut == "NON_POINTEE" and ligne.ligne_ecriture_pointee_id is None
+        assert ecr.pointee is False
+
+    def test_refuse_ecriture_deja_pointee(self):
+        import pytest
+        ecr = self._ecriture_banque(Decimal("300.00"), "C", date(2026, 1, 15))
+        r1 = self._releve([{"date_operation": date(2026, 1, 15), "libelle": "A", "montant": Decimal("-300.00")}])
+        pointer_manuellement(r1.lignes.first(), ecr)
+        r2 = self._releve([{"date_operation": date(2026, 1, 15), "libelle": "B", "montant": Decimal("-300.00")}])
+        with pytest.raises(ValueError):
+            pointer_manuellement(r2.lignes.first(), ecr)
