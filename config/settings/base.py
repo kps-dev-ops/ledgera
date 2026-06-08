@@ -41,6 +41,7 @@ TENANT_APPS = [
     "apps.audit",  # Piste d'audit par société (triggers PG, lecture seule)
     "apps.comptabilite",  # M1 : journaux, écritures, pièces, périodes
     "apps.tiers",  # M2 : clients, fournisseurs, lettrage
+    "apps.immobilisations",  # M3 : immos, amortissements, cessions
     "apps.etats",  # M5 : balance, grand livre, journal, bilan, CR
     "apps.imports_exports",  # M7 : imports Excel, exports FEC/Excel/PDF
     # apps.immobilisations, apps.banque — ajoutés en L3+
