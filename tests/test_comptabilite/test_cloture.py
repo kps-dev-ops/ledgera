@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.db import connection
+from django.db.utils import InternalError, ProgrammingError
 from django_tenants.test.cases import TenantTestCase
 
 from apps.comptabilite.models import (
@@ -80,3 +81,17 @@ class TestCloture(ClotureTestBase):
         assert self.ex.statut == "CLOTURE"
         assert self.ex.cloture_par_id == self.user.id and self.ex.date_cloture is not None
         assert Periode.objects.filter(exercice=self.ex, statut="CLOTUREE").count() == 12
+
+
+class TestVerrouillageR9(ClotureTestBase):
+    def test_ecriture_interdite_apres_cloture(self):
+        self._vente_validee(Decimal("1000.00"))
+        cloturer_exercice(self.ex, self.user)
+        with self.assertRaises((InternalError, ProgrammingError)):
+            with connection.cursor() as c:
+                c.execute(
+                    "INSERT INTO comptabilite_piececomptable "
+                    "(journal_id, exercice_id, date_piece, date_saisie, reference, libelle, statut, auteur_id, total_debit, total_credit) "
+                    "VALUES (%s, %s, %s, now(), '', 'X', 'BROUILLARD', %s, 0, 0)",
+                    [self.jvte.id, self.ex.id, date(2026, 6, 2), self.user.id],
+                )
