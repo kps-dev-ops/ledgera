@@ -1,3 +1,4 @@
+import pytest
 from datetime import date
 from decimal import Decimal
 
@@ -14,6 +15,7 @@ from apps.comptabilite.models import (
     Periode,
     PieceComptable,
 )
+from apps.comptabilite.selectors import apercu_cloture
 from apps.comptabilite.services import cloturer_exercice, valider_piece
 
 
@@ -95,3 +97,29 @@ class TestVerrouillageR9(ClotureTestBase):
                     "VALUES (%s, %s, %s, now(), '', 'X', 'BROUILLARD', %s, 0, 0)",
                     [self.jvte.id, self.ex.id, date(2026, 6, 2), self.user.id],
                 )
+
+
+class TestAperçuEtPreconditions(ClotureTestBase):
+    def test_refuse_si_brouillard(self):
+        p = PieceComptable.objects.create(
+            journal=self.jvte, exercice=self.ex, date_piece=date(2026, 6, 1),
+            libelle="brouillon", statut="BROUILLARD", auteur=self.user,
+        )
+        LigneEcriture.objects.create(piece=p, numero_ligne=1, compte=self.c521, debit=Decimal("5.00"), credit=Decimal("0.00"))
+        LigneEcriture.objects.create(piece=p, numero_ligne=2, compte=self.c701, debit=Decimal("0.00"), credit=Decimal("5.00"))
+        with pytest.raises(ValueError):
+            cloturer_exercice(self.ex, self.user)
+
+    def test_refuse_recloture(self):
+        self._vente_validee(Decimal("100.00"))
+        cloturer_exercice(self.ex, self.user)
+        with pytest.raises(ValueError):
+            cloturer_exercice(self.ex, self.user)
+
+    def test_apercu_cloture(self):
+        self._vente_validee(Decimal("1000.00"))
+        ap = apercu_cloture(self.ex)
+        assert ap["nb_brouillards"] == 0
+        assert ap["cloturable"] is True
+        assert ap["resultat_net"] == Decimal("1000.00")  # produits 1000 - charges 0
+        assert ap["exercice_suivant_existe"] is False
