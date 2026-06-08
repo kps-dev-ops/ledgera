@@ -14,7 +14,7 @@ from apps.comptabilite.models import (
     PieceComptable,
 )
 from apps.immobilisations.models import CategorieImmobilisation, Dotation, Immobilisation
-from apps.immobilisations.services import comptabiliser_dotations, generer_plan_amortissement, next_code_immobilisation
+from apps.immobilisations.services import ceder_immobilisation, comptabiliser_dotations, generer_plan_amortissement, next_code_immobilisation
 
 
 class ImmoTestBase(TenantTestCase):
@@ -110,3 +110,21 @@ class TestComptabilisationDotations(ImmoTestBase):
         generer_plan_amortissement(immo)
         comptabiliser_dotations(self.exercice, 1, self.user)
         assert comptabiliser_dotations(self.exercice, 1, self.user) is None  # idempotent
+
+
+class TestCession(ImmoTestBase):
+    def test_cession_avec_plus_value(self):
+        immo = self._immo()
+        generer_plan_amortissement(immo)
+        # comptabiliser 12 mois => cumul 2400, VNC 9600
+        for m in range(1, 13):
+            comptabiliser_dotations(self.exercice, m, self.user)
+        piece = ceder_immobilisation(immo, date(2026, 12, 31), Decimal("11000.00"), self.user)
+        immo.refresh_from_db()
+        assert immo.statut == "CEDEE"
+        assert immo.piece_cession_id == piece.id
+        assert piece.total_debit == piece.total_credit  # équilibrée
+        vnc = LigneEcriture.objects.get(piece=piece, compte=self.c654).debit
+        prix = LigneEcriture.objects.get(piece=piece, compte=self.c754).credit
+        assert vnc == Decimal("9600.00")
+        assert prix == Decimal("11000.00")
