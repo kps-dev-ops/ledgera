@@ -184,3 +184,40 @@ def mettre_au_rebut(immo, date_rebut, user) -> PieceComptable:
     immo.statut = "REBUT"
     immo.save(update_fields=["statut"])
     return piece
+
+
+CATEGORIES_DEFAUT = [
+    # (code, libellé, n° compte immo, n° amort, n° dotation, durée, mode)
+    ("MAT-INFO", "Matériel informatique", "244400", "284440", "681300", 3, "DEGRESSIF"),
+    ("MAT-BUR", "Matériel de bureau", "244100", "284410", "681300", 5, "LINEAIRE"),
+    ("MOBILIER", "Mobilier", "244300", "284430", "681300", 10, "LINEAIRE"),
+    ("MAT-TRANS", "Matériel de transport", "245000", "284500", "681300", 5, "DEGRESSIF"),
+]
+
+
+@transaction.atomic
+def init_categories_immo_par_defaut() -> int:
+    """Crée les catégories d'immobilisation standard. Idempotent.
+    Les comptes doivent exister dans le plan du tenant (sinon catégorie ignorée).
+    """
+    from .models import CategorieImmobilisation
+
+    crees = 0
+    for code, libelle, n_immo, n_amort, n_dot, duree, mode in CATEGORIES_DEFAUT:
+        comptes = {
+            c.numero: c
+            for c in CompteComptable.objects.filter(numero__in=[n_immo, n_amort, n_dot])
+        }
+        if not all(n in comptes for n in (n_immo, n_amort, n_dot)):
+            continue
+        _, created = CategorieImmobilisation.objects.get_or_create(
+            code=code,
+            defaults={
+                "libelle": libelle, "compte_immo": comptes[n_immo],
+                "compte_amortissement": comptes[n_amort], "compte_dotation": comptes[n_dot],
+                "duree_defaut": duree, "mode_defaut": mode,
+            },
+        )
+        if created:
+            crees += 1
+    return crees

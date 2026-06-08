@@ -128,3 +128,17 @@ class TestCession(ImmoTestBase):
         prix = LigneEcriture.objects.get(piece=piece, compte=self.c754).credit
         assert vnc == Decimal("9600.00")
         assert prix == Decimal("11000.00")
+
+
+class TestCloisonnement(ImmoTestBase):
+    def test_table_immo_absente_du_schema_public(self):
+        # R8 : les modèles TENANT_APP ne sont pas migrés dans le schema public ;
+        # la table immobilisation n'existe que dans le schema du tenant.
+        from django.db import connection
+        from django_tenants.utils import schema_context
+
+        self._immo()  # crée une immo dans le schema du tenant de test
+        with schema_context("public"):
+            with connection.cursor() as c:
+                c.execute("SELECT to_regclass('public.immobilisations_immobilisation')")
+                assert c.fetchone()[0] is None  # table absente de public => cloisonnement
