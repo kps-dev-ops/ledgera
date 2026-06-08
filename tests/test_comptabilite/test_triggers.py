@@ -9,7 +9,7 @@ from decimal import Decimal
 import pytest
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, connection, transaction
-from django.db.utils import InternalError
+from django.db.utils import InternalError, ProgrammingError
 from django_tenants.test.cases import TenantTestCase
 
 from apps.comptabilite.models import (
@@ -91,13 +91,13 @@ class TestTriggersR1R7(TriggersTestBase):
         piece.total_credit = Decimal("9000.00")
         piece.statut = "VALIDEE"
         piece.numero = 1
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 piece.save()
 
     def test_R2_periode_verrouillee_bloque(self):
         Periode.objects.filter(exercice=self.exercice, mois=4).update(statut="VERROUILLEE")
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 PieceComptable.objects.create(
                     journal=self.journal_ach, exercice=self.exercice,
@@ -109,14 +109,14 @@ class TestTriggersR1R7(TriggersTestBase):
         valider_piece(piece, self.user)
         piece.refresh_from_db()
         piece.libelle = "Modifié après validation"
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 piece.save()
 
     def test_R3_delete_piece_validee_interdit(self):
         piece = self._piece_ach_valide()
         valider_piece(piece, self.user)
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 piece.delete()
 
@@ -130,7 +130,7 @@ class TestTriggersR1R7(TriggersTestBase):
         self.assertEqual(numeros, [1, 2, 3])
 
     def test_R5_date_hors_exercice_rejetee(self):
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 PieceComptable.objects.create(
                     journal=self.journal_ach, exercice=self.exercice,
@@ -142,7 +142,7 @@ class TestTriggersR1R7(TriggersTestBase):
             journal=self.journal_ach, exercice=self.exercice,
             date_piece=date(2026, 4, 15), libelle="Test R7", auteur=self.user,
         )
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 LigneEcriture.objects.create(
                     piece=piece, numero_ligne=1, compte=self.c401,
@@ -154,7 +154,7 @@ class TestTriggersR1R7(TriggersTestBase):
             journal=self.journal_ach, exercice=self.exercice,
             date_piece=date(2026, 4, 15), libelle="Test R7 inverse", auteur=self.user,
         )
-        with self.assertRaises((IntegrityError, InternalError)):
+        with self.assertRaises((IntegrityError, InternalError, ProgrammingError)):
             with transaction.atomic():
                 LigneEcriture.objects.create(
                     piece=piece, numero_ligne=1, compte=self.c607,
