@@ -12,4 +12,5 @@ urlpatterns = [
     path("<int:pk>/ceder/", views.ceder, name="immo_ceder"),
     path("htmx/comptes-categorie/", views.comptes_categorie, name="comptes_categorie"),
     path("comptabiliser/", views.comptabiliser, name="comptabiliser"),
+    path("export/xlsx/", views.export_tableau_xlsx, name="export_xlsx"),
 ]

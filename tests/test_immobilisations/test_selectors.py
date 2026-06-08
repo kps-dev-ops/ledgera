@@ -16,3 +16,15 @@ class TestTableauImmobilisations(ImmoTestBase):
         ligne = next(l for l in lignes if l["code"] == immo.code)
         assert ligne["cumul_amortissements"] == Decimal("1200.00")
         assert ligne["vnc"] == Decimal("10800.00")
+
+
+class TestExportTableau(ImmoTestBase):
+    def test_export_excel_non_vide(self):
+        from apps.immobilisations.exports import tableau_immobilisations_xlsx
+
+        immo = self._immo()
+        generer_plan_amortissement(immo)
+        contenu = tableau_immobilisations_xlsx(date(2026, 6, 30))
+        assert isinstance(contenu, (bytes, bytearray))
+        assert len(contenu) > 0
+        assert contenu[:2] == b"PK"  # signature xlsx (zip)

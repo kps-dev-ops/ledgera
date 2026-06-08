@@ -1,10 +1,14 @@
+from datetime import date as _date
+
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from apps.comptabilite.models import Exercice
 
+from .exports import tableau_immobilisations_xlsx
 from .forms import CessionForm, ImmobilisationForm
 from .models import CategorieImmobilisation, Immobilisation
 from .services import (
@@ -86,3 +90,14 @@ def comptabiliser(request):
     return render(
         request, "immobilisations/comptabiliser_dotations.html", {"exercices": exercices}
     )
+
+
+def export_tableau_xlsx(request):
+    d = request.GET.get("date")
+    date_ref = _date.fromisoformat(d) if d else _date.today()
+    contenu = tableau_immobilisations_xlsx(date_ref)
+    response = HttpResponse(
+        contenu, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="immobilisations_{date_ref}.xlsx"'
+    return response

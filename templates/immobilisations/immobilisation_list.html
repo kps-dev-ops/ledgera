@@ -2,7 +2,10 @@
 {% block content %}
 <div class="flex justify-between items-center mb-4">
   <h1 class="text-xl font-semibold">Immobilisations</h1>
-  <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary">Nouvelle immobilisation</a>
+  <div class="flex gap-2">
+    <a href="{% url 'immobilisations:export_xlsx' %}" class="btn btn-ghost">Export Excel</a>
+    <a href="{% url 'immobilisations:immo_create' %}" class="btn btn-primary">Nouvelle immobilisation</a>
+  </div>
 </div>
 <table class="table">
   <thead><tr><th>Code</th><th>Désignation</th><th>Coût</th><th>Statut</th></tr></thead>
