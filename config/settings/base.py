@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ["SECRET_KEY"]
@@ -162,6 +164,16 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXPIRES = 60 * 60 * 24  # 24 heures
 CELERY_TIMEZONE = TIME_ZONE
+
+CELERY_BEAT_SCHEDULE = {
+    # Le 1er de chaque mois à 02:00 : comptabilisation des dotations.
+    # Les args (annee, mois, user_id) sont paramétrés via l'admin PeriodicTask
+    # (django-celery-beat) ou déclenchés manuellement depuis l'écran dédié.
+    "comptabiliser-dotations-mensuel": {
+        "task": "apps.immobilisations.tasks.comptabiliser_dotations_mensuel",
+        "schedule": crontab(day_of_month=1, hour=2, minute=0),
+    },
+}
 
 # Session
 SESSION_COOKIE_AGE = 4 * 60 * 60  # 4 heures
