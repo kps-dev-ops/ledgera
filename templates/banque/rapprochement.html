@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Rapprochement — Ledgera{% endblock %}
+
+{% block content %}
+<div>
+
+  <div class="text-sm breadcrumbs opacity-60 mb-2">
+    <ul>
+      <li><a href="{% url 'banque:compte_list' %}">Banque</a></li>
+      <li>{{ releve.compte_bancaire.libelle }}</li>
+      <li>Rapprochement</li>
+    </ul>
+  </div>
+
+  {# ---------- En-tête ---------- #}
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg">
+        <i data-lucide="git-compare"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight leading-none">Rapprochement bancaire</h1>
+        <p class="text-sm opacity-60 mt-1">
+          {{ releve.compte_bancaire.libelle }} · {{ releve.date_debut }} → {{ releve.date_fin }}
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <form method="post" action="{% url 'banque:pointer_auto' releve.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-sm gap-2 shadow">
+          <i data-lucide="sparkles"></i> Pointage automatique
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {# ---------- KPI état ---------- #}
+  {% include "banque/partials/etat_rapprochement.html" %}
+
+  {# ---------- Lignes du relevé ---------- #}
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+      <div class="flex flex-wrap items-center gap-3 p-4 border-b border-base-200">
+        <span class="font-medium">Lignes du relevé</span>
+        <span class="ml-auto text-xs opacity-50">{{ lignes|length }} ligne{{ lignes|length|pluralize }}</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr class="text-xs uppercase tracking-wide">
+              <th>Date</th>
+              <th>Libellé</th>
+              <th>Référence</th>
+              <th class="text-right">Montant</th>
+              <th>Statut</th>
+              <th class="w-80">Pointage</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for ligne in lignes %}
+            <tr class="hover">
+              <td class="font-mono tabular-nums">{{ ligne.date_operation }}</td>
+              <td class="font-medium">{{ ligne.libelle }}</td>
+              <td class="font-mono text-xs opacity-70">{{ ligne.reference_banque|default:"—" }}</td>
+              <td class="text-right font-mono tabular-nums {% if ligne.montant < 0 %}text-error{% else %}text-success{% endif %}">{{ ligne.montant }}</td>
+              <td>{% include "banque/partials/ligne_statut_badge.html" with statut=ligne.statut label=ligne.get_statut_display %}</td>
+              <td>
+                {% if ligne.statut == "NON_POINTEE" %}
+                  <form method="post" action="{% url 'banque:pointer_manuel' ligne.pk %}" class="flex items-center gap-2">
+                    {% csrf_token %}
+                    <select name="ecriture" class="select select-bordered select-xs grow" required>
+                      <option value="">Écriture…</option>
+                      {% for e in etat.ecritures_non_pointees %}
+                        <option value="{{ e.pk }}">{{ e.piece.date_piece }} · {{ e.libelle }} · {{ e.debit }}/{{ e.credit }}</option>
+                      {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-ghost btn-xs gap-1" title="Pointer">
+                      <i data-lucide="link"></i> Pointer
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'banque:depointer' ligne.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-ghost btn-xs gap-1 text-error" title="Dépointer">
+                      <i data-lucide="unlink"></i> Dépointer
+                    </button>
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6">
+                <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                  <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                    <i data-lucide="git-compare"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Aucune ligne dans ce relevé</p>
+                    <p class="text-sm opacity-50">Le fichier importé ne contenait aucune opération.</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

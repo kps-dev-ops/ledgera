@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Banque — Ledgera{% endblock %}
+
+{% block content %}
+<div>
+
+  {# ---------- En-tête ---------- #}
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg">
+        <i data-lucide="landmark"></i>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight leading-none">Banque</h1>
+        <p class="text-sm opacity-60 mt-1">Comptes bancaires et rapprochement des relevés</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{% url 'banque:releve_import' %}" class="btn btn-ghost btn-sm gap-2">
+        <i data-lucide="upload"></i> Importer un relevé
+      </a>
+      <a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2 shadow">
+        <i data-lucide="plus"></i> Nouveau compte
+      </a>
+    </div>
+  </div>
+
+  {# ---------- Liste ---------- #}
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+      <div class="flex flex-wrap items-center gap-3 p-4 border-b border-base-200">
+        <span class="font-medium">Comptes bancaires</span>
+        <span class="ml-auto text-xs opacity-50">{{ comptes|length }} compte{{ comptes|length|pluralize }}</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="table table-zebra">
+          <thead>
+            <tr class="text-xs uppercase tracking-wide">
+              <th>Libellé</th>
+              <th>Banque</th>
+              <th>Compte comptable</th>
+              <th>IBAN</th>
+              <th class="text-right">Solde initial</th>
+              <th>Devise</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for compte in comptes %}
+            <tr class="hover">
+              <td class="font-medium">{{ compte.libelle }}</td>
+              <td>{{ compte.banque_nom|default:"—" }}</td>
+              <td class="font-mono tabular-nums">{{ compte.compte_comptable.numero }}</td>
+              <td class="font-mono text-xs opacity-70">{{ compte.iban|default:"—" }}</td>
+              <td class="text-right font-mono tabular-nums">{{ compte.solde_initial }}</td>
+              <td>{{ compte.devise }}</td>
+              <td>
+                {% if compte.actif %}
+                  <span class="badge badge-success gap-1 font-medium"><i data-lucide="circle-check"></i>Actif</span>
+                {% else %}
+                  <span class="badge badge-ghost gap-1 font-medium"><i data-lucide="circle-off"></i>Inactif</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7">
+                <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                  <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                    <i data-lucide="landmark"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium">Aucun compte bancaire</p>
+                    <p class="text-sm opacity-50">Créez un compte pour importer ses relevés et lancer le rapprochement.</p>
+                  </div>
+                  <a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2">
+                    <i data-lucide="plus"></i> Nouveau compte
+                  </a>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

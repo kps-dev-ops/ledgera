@@ -1,0 +1,3 @@
+{% if statut == "POINTEE_AUTO" %}<span class="badge badge-success gap-1 font-medium"><i data-lucide="sparkles"></i>{{ label }}</span>
+{% elif statut == "POINTEE_MANUEL" %}<span class="badge badge-info gap-1 font-medium"><i data-lucide="link"></i>{{ label }}</span>
+{% else %}<span class="badge badge-ghost gap-1 font-medium"><i data-lucide="circle-dashed"></i>{{ label }}</span>{% endif %}

@@ -1,0 +1,39 @@
+{# Cartes KPI de l'état de rapprochement #}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+      <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+        <i data-lucide="wallet"></i> Solde initial
+      </div>
+      <div class="text-2xl font-bold font-mono tabular-nums mt-1">{{ etat.solde_initial }}</div>
+      <div class="text-xs opacity-50">au {{ releve.date_debut }}</div>
+    </div>
+  </div>
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+      <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+        <i data-lucide="check-check"></i> Total pointé
+      </div>
+      <div class="text-2xl font-bold font-mono tabular-nums mt-1 text-success">{{ etat.total_pointe }}</div>
+      <div class="text-xs opacity-50">{{ etat.nb_en_attente }} en attente</div>
+    </div>
+  </div>
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+      <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+        <i data-lucide="flag"></i> Solde final
+      </div>
+      <div class="text-2xl font-bold font-mono tabular-nums mt-1">{{ etat.solde_final }}</div>
+      <div class="text-xs opacity-50">au {{ releve.date_fin }}</div>
+    </div>
+  </div>
+  <div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+      <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+        <i data-lucide="scale"></i> Écart
+      </div>
+      <div class="text-2xl font-bold font-mono tabular-nums mt-1 {% if etat.ecart %}text-error{% else %}text-success{% endif %}">{{ etat.ecart }}</div>
+      <div class="text-xs opacity-50">solde comptable {{ etat.solde_comptable }}</div>
+    </div>
+  </div>
+</div>

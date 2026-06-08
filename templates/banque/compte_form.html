@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Nouveau compte bancaire — Ledgera{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+  <div class="text-sm breadcrumbs opacity-60 mb-2">
+    <ul>
+      <li><a href="{% url 'banque:compte_list' %}">Banque</a></li>
+      <li>Nouveau compte</li>
+    </ul>
+  </div>
+
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg">
+      <i data-lucide="plus"></i>
+    </div>
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight leading-none">Nouveau compte bancaire</h1>
+      <p class="text-sm opacity-60 mt-1">Rattachez le compte à un compte comptable et à un journal de banque.</p>
+    </div>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+      <div class="card-body p-6">
+        {{ form|crispy }}
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 mt-4">
+      <a href="{% url 'banque:compte_list' %}" class="btn btn-ghost">Annuler</a>
+      <button type="submit" class="btn btn-primary gap-2 shadow">
+        <i data-lucide="save"></i> Enregistrer
+      </button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
