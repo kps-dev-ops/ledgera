@@ -29,6 +29,7 @@ dependencies = [
     "django-unfold>=0.40,<1.0",
     "gunicorn>=22.0",
     "redis>=5.2",
+    "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]

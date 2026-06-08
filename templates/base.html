@@ -10,11 +10,82 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@2.0.3" defer></script>
     <script src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     {% django_htmx_script %}
+    <style>
+        [data-lucide] { width: 1em; height: 1em; display: inline-block; vertical-align: -0.125em; }
+        .icon-lg [data-lucide] { width: 1.5rem; height: 1.5rem; }
+    </style>
 </head>
-<body class="bg-base-200 min-h-screen font-sans text-base-content">
+<body class="bg-base-200 min-h-screen font-sans text-base-content antialiased">
 
-    {% block navbar %}{% endblock %}
+    {% block navbar %}
+    <header class="navbar bg-base-100 shadow-md sticky top-0 z-40 border-b border-base-300">
+        <div class="container mx-auto px-2">
+            <div class="flex-1">
+                <a href="/" class="btn btn-ghost text-xl font-bold gap-2 normal-case">
+                    <span class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content text-sm font-black">L</span>
+                    <span class="text-primary">Ledgera</span>
+                </a>
+                {% if request.tenant and request.tenant.schema_name != "public" %}
+                <span class="badge badge-outline ml-2 hidden md:inline-flex">{{ request.tenant.code }}</span>
+                {% endif %}
+            </div>
+            {% if user.is_authenticated %}
+            <div class="flex-none">
+                <ul class="menu menu-horizontal gap-1 text-sm">
+                    <li><a href="{% url 'comptabilite:piece_list' %}" class="font-medium">Pièces</a></li>
+                    <li>
+                        <details>
+                            <summary class="font-medium">États</summary>
+                            <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
+                                <li><a href="{% url 'etats:balance' %}"><i data-lucide="bar-chart-3"></i> Balance générale</a></li>
+                                <li><a href="{% url 'etats:balance_auxiliaire' %}"><i data-lucide="receipt"></i> Balance auxiliaire</a></li>
+                                <li><a href="{% url 'etats:grand_livre' %}"><i data-lucide="book-open"></i> Grand livre</a></li>
+                                <li><a href="{% url 'etats:journal' %}"><i data-lucide="calendar-days"></i> Journal</a></li>
+                                <li><a href="{% url 'etats:bilan' %}"><i data-lucide="scale"></i> Bilan SYSCOHADA</a></li>
+                                <li><a href="{% url 'etats:compte_resultat' %}"><i data-lucide="trending-up"></i> Compte de résultat</a></li>
+                            </ul>
+                        </details>
+                    </li>
+                    <li><a href="{% url 'tiers:tiers_list' %}" class="font-medium">Tiers</a></li>
+                    <li>
+                        <details>
+                            <summary class="font-medium">I/O</summary>
+                            <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
+                                <li><a href="{% url 'imports_exports:import_list' %}"><i data-lucide="download"></i> Imports Excel</a></li>
+                                <li><a href="{% url 'imports_exports:export_list' %}"><i data-lucide="upload"></i> Exports (FEC/Excel/PDF)</a></li>
+                            </ul>
+                        </details>
+                    </li>
+                    <li>
+                        <details>
+                            <summary class="font-medium">
+                                <span class="bg-primary text-primary-content rounded-full w-7 h-7 flex items-center justify-center text-xs font-bold">{{ user.email|first|upper }}</span>
+                            </summary>
+                            <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300 right-0">
+                                <li class="menu-title"><span class="text-xs">{{ user.email }}</span></li>
+                                <li><a href="/admin/"><i data-lucide="settings"></i> Admin Django</a></li>
+                                <li><a href="{% url 'account_logout' %}" class="text-error"><i data-lucide="log-out"></i> Se déconnecter</a></li>
+                            </ul>
+                        </details>
+                    </li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </header>
+    {% endblock %}
+
+    {% if messages %}
+    <div class="container mx-auto px-4 mt-4 space-y-2">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} shadow">
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main class="container mx-auto px-4 py-6">
         {% block content %}{% endblock %}
@@ -27,5 +98,10 @@
     </div>
 
     {% block scripts %}{% endblock %}
+    <script>
+        // Init Lucide icons + re-init après chaque swap HTMX
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+        document.body.addEventListener('htmx:afterSwap', () => lucide.createIcons());
+    </script>
 </body>
 </html>

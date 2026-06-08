@@ -18,6 +18,7 @@ SHARED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",
     "django.contrib.admin",
     "allauth",
     "allauth.account",
@@ -112,6 +113,11 @@ LANGUAGE_CODE = "fr-fr"
 TIME_ZONE = "Africa/Porto-Novo"
 USE_I18N = True
 USE_TZ = True
+# Formatage français : séparateur de milliers (espace) + virgule décimale
+USE_THOUSAND_SEPARATOR = True
+NUMBER_GROUPING = 3
+DECIMAL_SEPARATOR = ","
+THOUSAND_SEPARATOR = " "  # espace fine insécable (NARROW NO-BREAK SPACE)
 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
