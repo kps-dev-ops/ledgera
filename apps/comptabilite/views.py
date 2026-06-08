@@ -9,9 +9,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, ListView
 
 from .forms import LigneFormSet, PieceForm
-from .models import LigneEcriture, PieceComptable
-from .selectors import search_comptes, search_tiers
-from .services import delettrer, lettrer, valider_piece
+from .models import Exercice, LigneEcriture, PieceComptable
+from .selectors import apercu_cloture, search_comptes, search_tiers
+from .services import cloturer_exercice, delettrer, lettrer, valider_piece
 
 
 class PieceListView(LoginRequiredMixin, ListView):
@@ -211,3 +211,29 @@ def piece_supprimer_brouillard(request, pk):
         messages.success(request, "Brouillard supprimé.")
         return redirect("comptabilite:piece_list")
     return HttpResponseForbidden("POST requis")
+
+
+# --- Clôture d'exercice ---
+
+@login_required
+def cloture_liste(request):
+    return render(request, "comptabilite/cloture.html", {"exercices": Exercice.objects.all()})
+
+
+@login_required
+def cloture(request, pk):
+    exercice = get_object_or_404(Exercice, pk=pk)
+    if request.method == "POST" and exercice.statut != "CLOTURE":
+        try:
+            piece = cloturer_exercice(exercice, request.user)
+            return render(request, "comptabilite/cloture.html", {
+                "exercice": exercice, "apercu": apercu_cloture(exercice),
+                "piece_an": piece, "fait": True,
+            })
+        except ValueError as e:
+            return render(request, "comptabilite/cloture.html", {
+                "exercice": exercice, "apercu": apercu_cloture(exercice), "erreur": str(e),
+            })
+    return render(request, "comptabilite/cloture.html", {
+        "exercice": exercice, "apercu": apercu_cloture(exercice),
+    })

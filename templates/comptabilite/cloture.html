@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Clôture d'exercice — Ledgera{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-11 h-11 rounded-xl bg-error/10 text-error flex items-center justify-center icon-lg"><i data-lucide="lock"></i></div>
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight leading-none">Clôture d'exercice</h1>
+      <p class="text-sm opacity-60 mt-1">Génère les à-nouveaux et verrouille définitivement l'exercice.</p>
+    </div>
+  </div>
+
+  {% if exercices %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm"><div class="card-body p-0">
+      <table class="table table-zebra">
+        <thead><tr class="text-xs uppercase"><th>Exercice</th><th>Période</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for e in exercices %}
+          <tr class="hover">
+            <td class="font-mono font-semibold">{{ e.code }}</td>
+            <td>{{ e.date_debut }} → {{ e.date_fin }}</td>
+            <td>{% if e.statut == "CLOTURE" %}<span class="badge badge-error gap-1"><i data-lucide="lock"></i> Clôturé</span>{% else %}<span class="badge badge-success">Ouvert</span>{% endif %}</td>
+            <td class="text-right"><a href="{% url 'comptabilite:cloture' e.pk %}" class="btn btn-ghost btn-xs">Ouvrir</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  {% else %}
+    {% if fait %}
+      <div class="alert alert-success shadow-sm mb-4"><i data-lucide="circle-check-big"></i>
+        <div><h3 class="font-semibold">Exercice {{ exercice.code }} clôturé</h3>
+        <div class="text-sm opacity-80">À-nouveaux générés : {{ piece_an }}.</div></div>
+      </div>
+    {% endif %}
+    {% if erreur %}<div class="alert alert-error shadow-sm mb-4"><i data-lucide="triangle-alert"></i><span>{{ erreur }}</span></div>{% endif %}
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm mb-4"><div class="card-body p-5">
+      <h2 class="font-semibold mb-2">Exercice {{ exercice.code }}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div><div class="text-xs uppercase opacity-50">Brouillards</div><div class="text-lg font-bold {% if apercu.nb_brouillards %}text-error{% endif %}">{{ apercu.nb_brouillards }}</div></div>
+        <div><div class="text-xs uppercase opacity-50">Résultat net</div><div class="text-lg font-bold font-mono tabular-nums">{{ apercu.resultat_net }}</div></div>
+        <div><div class="text-xs uppercase opacity-50">Exercice N+1</div><div class="text-lg font-bold">{% if apercu.exercice_suivant_existe %}existe{% else %}sera créé{% endif %}</div></div>
+      </div>
+    </div></div>
+
+    {% if exercice.statut == "CLOTURE" %}
+      <div class="alert"><i data-lucide="lock"></i><span>Exercice clôturé le {{ exercice.date_cloture }}. Aucune écriture possible.</span></div>
+    {% elif apercu.cloturable %}
+      <form method="post" x-data="{ ok: false }">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-error gap-2 w-full" @click.prevent="ok ? $el.closest('form').submit() : (ok = true)">
+          <i data-lucide="lock"></i><span x-text="ok ? 'Confirmer la clôture définitive' : 'Clôturer l\'exercice'"></span>
+        </button>
+      </form>
+    {% else %}
+      <div class="alert alert-warning"><i data-lucide="triangle-alert"></i><span>Clôture impossible : validez ou supprimez les {{ apercu.nb_brouillards }} brouillard(s).</span></div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
