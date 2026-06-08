@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+  body { font-family: sans-serif; font-size: 12px; color: #1a1a1a; }
+  h1 { font-size: 18px; } table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  td, th { border: 1px solid #ccc; padding: 6px 8px; } th { background: #f0f3f7; text-align: left; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; } .total { font-weight: bold; }
+</style></head><body>
+  <h1>Bordereau de déclaration de TVA</h1>
+  <p>{{ declaration.configuration.libelle }} — Période {{ declaration.periode_num }}/{{ declaration.annee }}
+     ({{ declaration.date_debut }} &rarr; {{ declaration.date_fin }})</p>
+  <table>
+    <tr><th>TVA collectée</th><td class="num">{{ declaration.tva_collectee }}</td></tr>
+    <tr><th>TVA déductible</th><td class="num">{{ declaration.tva_deductible }}</td></tr>
+    <tr class="total"><th>{% if declaration.tva_nette < 0 %}Crédit de TVA{% else %}TVA nette à payer{% endif %}</th>
+        <td class="num">{{ declaration.tva_nette }}</td></tr>
+  </table>
+</body></html>

@@ -123,3 +123,9 @@ def comptabiliser_liquidation(declaration, user) -> PieceComptable:
     declaration.piece_liquidation = piece
     declaration.save(update_fields=["statut", "piece_liquidation"])
     return piece
+
+
+def generer_bordereau_pdf(declaration) -> bytes:
+    from apps.imports_exports.services.pdf import render_pdf
+
+    return render_pdf("fiscal/bordereau_tva.html", {"declaration": declaration})
