@@ -15,7 +15,7 @@ from apps.comptabilite.models import (
 )
 from apps.comptabilite.services import valider_piece
 from apps.fiscal.models import ConfigurationTVA, DeclarationTVA
-from apps.fiscal.services import calculer_tva, creer_declaration_tva
+from apps.fiscal.services import calculer_tva, creer_declaration_tva, generer_bordereau_pdf
 from apps.comptabilite.models import LigneEcriture as _LE
 from apps.fiscal.services import comptabiliser_liquidation
 
@@ -112,3 +112,31 @@ class TestLiquidation(FiscalTestBase):
         comptabiliser_liquidation(decl, self.user)
         with pytest.raises(ValueError):
             comptabiliser_liquidation(decl, self.user)
+
+
+class TestBordereau(FiscalTestBase):
+    def test_bordereau_pdf_non_vide(self):
+        import pytest
+
+        self._piece([(self.c521, "1200.00", "0.00"), (self.c701, "0.00", "1000.00"), (self.c4431, "0.00", "200.00")])
+        decl = creer_declaration_tva(self.config, 2026, 1, self.user)
+        try:
+            pdf = generer_bordereau_pdf(decl)
+        except OSError as exc:
+            # Les libs natives de WeasyPrint (GTK : libgobject/pango/cairo) ne sont
+            # pas installées sur cette machine. Le wrapper reste testé ailleurs sur
+            # un environnement équipé ; ici on saute plutôt que de masquer le besoin.
+            pytest.skip(f"WeasyPrint natif indisponible (GTK manquant) : {exc}")
+        assert isinstance(pdf, (bytes, bytearray)) and pdf[:4] == b"%PDF"
+
+
+class TestCloisonnement(FiscalTestBase):
+    def test_table_declaration_absente_du_public(self):
+        from django.db import connection
+        from django_tenants.utils import schema_context
+
+        creer_declaration_tva(self.config, 2026, 1, self.user)
+        with schema_context("public"):
+            with connection.cursor() as c:
+                c.execute("SELECT to_regclass('public.fiscal_declarationtva')")
+                assert c.fetchone()[0] is None
