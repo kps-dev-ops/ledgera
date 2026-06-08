@@ -44,7 +44,7 @@ TENANT_APPS = [
     "apps.immobilisations",  # M3 : immos, amortissements, cessions
     "apps.etats",  # M5 : balance, grand livre, journal, bilan, CR
     "apps.imports_exports",  # M7 : imports Excel, exports FEC/Excel/PDF
-    # apps.immobilisations, apps.banque — ajoutés en L3+
+    # apps.banque — ajouté en L3b
 ]
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
