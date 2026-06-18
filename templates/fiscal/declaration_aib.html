@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}AIB — Ledgera{% endblock %}
+{% block content %}
+<div class="flex items-center gap-3 mb-6">
+  <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg"><i data-lucide="coins"></i></div>
+  <div><h1 class="text-2xl font-bold tracking-tight leading-none">AIB</h1>
+  <p class="text-sm opacity-60 mt-1">Acompte sur Impôts sur Bénéfice</p></div>
+</div>
+
+<div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
+  <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+    <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Calculer</button>
+  </form>
+  {% if declaration %}
+  <div class="grid grid-cols-3 gap-4 mt-4">
+    <div><div class="text-xs uppercase opacity-50">Base</div><div class="text-lg font-bold font-mono tabular-nums">{{ declaration.base_imposable }}</div></div>
+    <div><div class="text-xs uppercase opacity-50">Taux</div><div class="text-lg font-bold">{{ declaration.configuration.taux }} %</div></div>
+    <div><div class="text-xs uppercase opacity-50">Montant AIB</div><div class="text-lg font-bold font-mono tabular-nums text-error">{{ declaration.montant_aib }}</div></div>
+  </div>
+  {% endif %}
+</div></div>
+
+<div class="card bg-base-100 border border-base-300 shadow-sm"><div class="card-body p-0">
+  <div class="overflow-x-auto"><table class="table table-zebra">
+    <thead><tr class="text-xs uppercase"><th>Période</th><th class="text-right">Base</th><th class="text-right">AIB</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+    {% for d in declarations %}
+      <tr class="hover">
+        <td class="font-mono">{{ d.periode_num }}/{{ d.annee }}</td>
+        <td class="text-right font-mono tabular-nums">{{ d.base_imposable }}</td>
+        <td class="text-right font-mono tabular-nums font-semibold">{{ d.montant_aib }}</td>
+        <td>{% if d.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>{% else %}<span class="badge badge-ghost">Brouillon</span>{% endif %}</td>
+        <td class="text-right">
+          {% if d.statut != "VALIDEE" %}<a href="{% url 'fiscal:aib_comptabiliser' d.pk %}" class="btn btn-ghost btn-xs">Comptabiliser</a>{% endif %}
+          <a href="{% url 'fiscal:aib_bordereau' d.pk %}" class="btn btn-ghost btn-xs">PDF</a>
+        </td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="text-center py-12 opacity-50">Aucune déclaration AIB.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div></div>
+{% endblock %}

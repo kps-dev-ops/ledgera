@@ -2,14 +2,17 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .forms import DeclarationISForm, DeclarationPeriodeForm, RetraitementForm
-from .models import DeclarationIS, DeclarationTVA
+from .forms import DeclarationAIBForm, DeclarationISForm, DeclarationPeriodeForm, RetraitementForm
+from .models import DeclarationAIB, DeclarationIS, DeclarationTVA
 from .services import (
     ajouter_retraitement,
+    comptabiliser_aib,
     comptabiliser_impot,
     comptabiliser_liquidation,
+    creer_declaration_aib,
     creer_declaration_is,
     creer_declaration_tva,
+    generer_bordereau_aib_pdf,
     generer_bordereau_is_pdf,
     generer_bordereau_pdf,
 )
@@ -85,4 +88,36 @@ def is_bordereau(request, pk):
     pdf = generer_bordereau_is_pdf(decl)
     resp = HttpResponse(pdf, content_type="application/pdf")
     resp["Content-Disposition"] = f'inline; filename="is_{decl.exercice.code}.pdf"'
+    return resp
+
+
+@login_required
+def aib_list(request):
+    form = DeclarationAIBForm(request.POST or None)
+    decl = None
+    if request.method == "POST" and form.is_valid():
+        decl = creer_declaration_aib(
+            form.cleaned_data["configuration"], form.cleaned_data["annee"],
+            form.cleaned_data["periode_num"], form.cleaned_data["base_imposable"], request.user,
+        )
+    return render(request, "fiscal/declaration_aib.html", {
+        "form": form, "declaration": decl,
+        "declarations": DeclarationAIB.objects.select_related("configuration")[:50],
+    })
+
+
+@login_required
+def aib_comptabiliser(request, pk):
+    decl = get_object_or_404(DeclarationAIB, pk=pk)
+    if decl.statut != "VALIDEE":
+        comptabiliser_aib(decl, request.user)
+    return redirect("fiscal:aib_list")
+
+
+@login_required
+def aib_bordereau(request, pk):
+    decl = get_object_or_404(DeclarationAIB, pk=pk)
+    pdf = generer_bordereau_aib_pdf(decl)
+    resp = HttpResponse(pdf, content_type="application/pdf")
+    resp["Content-Disposition"] = f'inline; filename="aib_{decl.annee}_{decl.periode_num:02d}.pdf"'
     return resp
