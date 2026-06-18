@@ -18,3 +18,9 @@ def obligations_tva(config, annee: int) -> list[dict]:
         DeclarationTVA.objects.filter(configuration=config, annee=annee).values_list("periode_num", flat=True)
     )
     return [{"periode_num": p, "declaree": p in declarees} for p in range(1, nb + 1)]
+
+
+def declarations_aib_par_annee(annee) -> list:
+    from .models import DeclarationAIB
+
+    return list(DeclarationAIB.objects.filter(annee=annee).select_related("configuration"))

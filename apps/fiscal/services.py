@@ -8,7 +8,7 @@ from django.db.models import Sum
 from apps.comptabilite.models import Exercice, LigneEcriture, PieceComptable
 from apps.comptabilite.services import valider_piece
 
-from .models import DeclarationIS, DeclarationTVA, RetraitementFiscal
+from .models import DeclarationAIB, DeclarationIS, DeclarationTVA, RetraitementFiscal
 
 
 def _bornes_periode(periodicite: str, annee: int, periode_num: int) -> tuple[date, date]:
@@ -205,3 +205,50 @@ def ajouter_retraitement(declaration, libelle, montant, sens):
     rt = RetraitementFiscal.objects.create(declaration=declaration, libelle=libelle, montant=montant, sens=sens)
     recalculer(declaration)
     return rt
+
+
+@transaction.atomic
+def creer_declaration_aib(config, annee, periode_num, base_imposable, user):
+    montant = (Decimal(base_imposable) * config.taux / Decimal("100")).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
+    decl, _ = DeclarationAIB.objects.get_or_create(
+        configuration=config, annee=annee, periode_num=periode_num,
+        defaults={"base_imposable": base_imposable, "montant_aib": montant},
+    )
+    decl.base_imposable = base_imposable
+    decl.montant_aib = montant
+    decl.save(update_fields=["base_imposable", "montant_aib"])
+    return decl
+
+
+@transaction.atomic
+def comptabiliser_aib(declaration, user):
+    if declaration.statut == "VALIDEE":
+        raise ValueError("Déclaration AIB déjà comptabilisée")
+    config = declaration.configuration
+    piece = None
+    if declaration.montant_aib > 0:
+        exercice = Exercice.objects.get(date_debut__year=declaration.annee)
+        piece = PieceComptable.objects.create(
+            journal=config.journal, exercice=exercice,
+            date_piece=date(declaration.annee, declaration.periode_num, 1),
+            reference=f"AIB-{declaration.annee}-{declaration.periode_num:02d}",
+            libelle=f"AIB {declaration.periode_num:02d}/{declaration.annee}",
+            statut="BROUILLARD", auteur=user,
+        )
+        LigneEcriture.objects.create(piece=piece, numero_ligne=1, compte=config.compte_aib,
+                                     libelle="AIB - acompte", debit=declaration.montant_aib, credit=Decimal("0.00"))
+        LigneEcriture.objects.create(piece=piece, numero_ligne=2, compte=config.compte_tresorerie,
+                                     libelle="Paiement AIB", debit=Decimal("0.00"), credit=declaration.montant_aib)
+        valider_piece(piece, user)
+        declaration.piece = piece
+    declaration.statut = "VALIDEE"
+    declaration.save(update_fields=["statut", "piece"])
+    return piece
+
+
+def generer_bordereau_aib_pdf(declaration) -> bytes:
+    from apps.imports_exports.services.pdf import render_pdf
+
+    return render_pdf("fiscal/bordereau_aib.html", {"declaration": declaration})
