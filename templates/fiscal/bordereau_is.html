@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<style>
+  body { font-family: sans-serif; font-size: 12px; } h1 { font-size: 18px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  td, th { border: 1px solid #ccc; padding: 6px 8px; } th { background: #f0f3f7; text-align: left; }
+  .num { text-align: right; } .total { font-weight: bold; }
+</style></head><body>
+  <h1>Déclaration d'impôt sur les bénéfices</h1>
+  <p>{{ declaration.configuration.libelle }} — Exercice {{ declaration.exercice.code }}</p>
+  <table>
+    <tr><th>Résultat comptable</th><td class="num">{{ declaration.resultat_comptable }}</td></tr>
+    <tr><th>Réintégrations</th><td class="num">{{ declaration.total_reintegrations }}</td></tr>
+    <tr><th>Déductions</th><td class="num">{{ declaration.total_deductions }}</td></tr>
+    <tr class="total"><th>Résultat fiscal</th><td class="num">{{ declaration.resultat_fiscal }}</td></tr>
+    <tr><th>Taux</th><td class="num">{{ declaration.configuration.taux }} %</td></tr>
+    <tr class="total"><th>Impôt dû</th><td class="num">{{ declaration.impot }}</td></tr>
+  </table>
+</body></html>

@@ -170,6 +170,12 @@ def creer_declaration_is(config, exercice, user):
     return recalculer(decl)
 
 
+def generer_bordereau_is_pdf(declaration) -> bytes:
+    from apps.imports_exports.services.pdf import render_pdf
+
+    return render_pdf("fiscal/bordereau_is.html", {"declaration": declaration})
+
+
 @transaction.atomic
 def comptabiliser_impot(declaration, user):
     if declaration.statut == "VALIDEE":

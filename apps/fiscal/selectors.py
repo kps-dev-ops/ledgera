@@ -1,6 +1,12 @@
 from .models import DeclarationTVA
 
 
+def declarations_is_par_exercice(exercice) -> list:
+    from .models import DeclarationIS
+
+    return list(DeclarationIS.objects.filter(exercice=exercice).select_related("configuration"))
+
+
 def declarations_par_annee(annee: int) -> list:
     return list(DeclarationTVA.objects.filter(annee=annee).select_related("configuration"))
 

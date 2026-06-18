@@ -1,3 +1,4 @@
+import pytest
 from datetime import date
 from decimal import Decimal
 
@@ -15,10 +16,12 @@ from apps.comptabilite.models import (
 )
 from apps.comptabilite.services import valider_piece
 from apps.fiscal.models import ConfigurationIS, DeclarationIS
+from apps.fiscal.selectors import declarations_is_par_exercice
 from apps.fiscal.services import (
     ajouter_retraitement,
     comptabiliser_impot,
     creer_declaration_is,
+    generer_bordereau_is_pdf,
     resultat_comptable,
 )
 from apps.comptabilite.models import LigneEcriture as _LE
@@ -118,9 +121,39 @@ class TestComptabilisationIS(ISTestBase):
         assert piece is None and decl.statut == "VALIDEE"
 
     def test_refuse_recomptabilisation(self):
-        import pytest
         self._benefice(10000, 6000)
         decl = creer_declaration_is(self.config, self.ex, self.user)
         comptabiliser_impot(decl, self.user)
         with pytest.raises(ValueError):
             comptabiliser_impot(decl, self.user)
+
+
+class TestBordereauIS(ISTestBase):
+    def test_pdf_non_vide(self):
+        self._benefice(10000, 6000)
+        decl = creer_declaration_is(self.config, self.ex, self.user)
+        try:
+            pdf = generer_bordereau_is_pdf(decl)
+        except OSError:
+            pytest.skip("WeasyPrint/GTK indisponible")
+        assert pdf[:4] == b"%PDF"
+
+
+class TestHistoriqueIS(ISTestBase):
+    def test_historique(self):
+        self._benefice(10000, 6000)
+        creer_declaration_is(self.config, self.ex, self.user)
+        assert len(declarations_is_par_exercice(self.ex)) == 1
+
+
+class TestCloisonnementIS(ISTestBase):
+    def test_table_absente_du_public(self):
+        from django.db import connection
+        from django_tenants.utils import schema_context
+
+        self._benefice(10000, 6000)
+        creer_declaration_is(self.config, self.ex, self.user)
+        with schema_context("public"):
+            with connection.cursor() as c:
+                c.execute("SELECT to_regclass('public.fiscal_declarationis')")
+                assert c.fetchone()[0] is None
