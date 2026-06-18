@@ -174,7 +174,10 @@ class DeclarationAIB(models.Model):
         verbose_name_plural = "Déclarations AIB"
         ordering = ["-annee", "-periode_num"]
         constraints = [
-            models.UniqueConstraint(fields=["configuration", "annee", "periode_num"], name="declaration_aib_unique_periode"),
+            models.UniqueConstraint(
+                fields=["configuration", "annee", "periode_num"],
+                name="declaration_aib_unique_periode",
+            ),
         ]
 
     def __str__(self):
