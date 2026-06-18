@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}IS — Ledgera{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center icon-lg"><i data-lucide="landmark"></i></div>
+    <div><h1 class="text-2xl font-bold tracking-tight leading-none">Impôt sur les bénéfices</h1>
+    <p class="text-sm opacity-60 mt-1">Résultat fiscal, retraitements et impôt</p></div>
+  </div>
+
+  {% if declaration %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm mb-4"><div class="card-body">
+      <h2 class="font-semibold">Exercice {{ declaration.exercice.code }}
+        {% if declaration.statut == "VALIDEE" %}<span class="badge badge-success ml-2">Validée</span>{% endif %}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
+        <div><div class="text-xs uppercase opacity-50">Résultat comptable</div><div class="font-mono tabular-nums font-bold">{{ declaration.resultat_comptable }}</div></div>
+        <div><div class="text-xs uppercase opacity-50">Résultat fiscal</div><div class="font-mono tabular-nums font-bold">{{ declaration.resultat_fiscal }}</div></div>
+        <div><div class="text-xs uppercase opacity-50">Impôt ({{ declaration.configuration.taux }}%)</div><div class="font-mono tabular-nums font-bold text-error">{{ declaration.impot }}</div></div>
+      </div>
+    </div></div>
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm mb-4"><div class="card-body">
+      <h3 class="font-semibold mb-2">Retraitements</h3>
+      <table class="table table-sm">
+        <thead><tr><th>Libellé</th><th>Sens</th><th class="text-right">Montant</th></tr></thead>
+        <tbody>
+        {% for r in declaration.retraitements.all %}
+          <tr><td>{{ r.libelle }}</td><td>{{ r.get_sens_display }}</td><td class="text-right font-mono tabular-nums">{{ r.montant }}</td></tr>
+        {% empty %}<tr><td colspan="3" class="opacity-50">Aucun retraitement.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+      {% if declaration.statut != "VALIDEE" %}
+      <form method="post" class="flex flex-wrap items-end gap-2 mt-2">{% csrf_token %}{{ retraitement_form|crispy }}
+        <button class="btn btn-ghost btn-sm gap-1"><i data-lucide="plus"></i> Ajouter</button>
+      </form>
+      {% endif %}
+    </div></div>
+
+    <div class="flex gap-2">
+      {% if declaration.statut != "VALIDEE" %}<a href="{% url 'fiscal:is_comptabiliser' declaration.pk %}" class="btn btn-primary gap-2"><i data-lucide="check"></i> Comptabiliser l'impôt</a>{% endif %}
+      <a href="{% url 'fiscal:is_bordereau' declaration.pk %}" class="btn btn-ghost gap-2"><i data-lucide="file-text"></i> Bordereau PDF</a>
+    </div>
+  {% else %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
+      <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+        <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Créer la déclaration</button>
+      </form>
+    </div></div>
+    <div class="card bg-base-100 border border-base-300 shadow-sm"><div class="card-body p-0">
+      <table class="table table-zebra">
+        <thead><tr class="text-xs uppercase"><th>Exercice</th><th class="text-right">Résultat fiscal</th><th class="text-right">Impôt</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for d in declarations %}
+          <tr class="hover"><td class="font-mono">{{ d.exercice.code }}</td>
+            <td class="text-right font-mono tabular-nums">{{ d.resultat_fiscal }}</td>
+            <td class="text-right font-mono tabular-nums font-semibold">{{ d.impot }}</td>
+            <td>{% if d.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>{% else %}<span class="badge badge-ghost">Brouillon</span>{% endif %}</td>
+            <td class="text-right"><a href="{% url 'fiscal:is_detail' d.pk %}" class="btn btn-ghost btn-xs">Ouvrir</a></td></tr>
+        {% empty %}<tr><td colspan="5" class="text-center py-12 opacity-50">Aucune déclaration IS.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div></div>
+  {% endif %}
+</div>
+{% endblock %}
