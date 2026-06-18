@@ -103,6 +103,28 @@ COMPTE_PRODUIT_CESSION = "754000"
 COMPTE_CREANCE_CESSION = "485000"
 
 
+def _comptes_cession():
+    """Retourne (valeur_comptable, produit, creance) depuis la config active si elle
+    existe, sinon repli sur les comptes SYSCOHADA legacy (654000/754000/485000).
+    """
+    from .models import ConfigurationCessionImmo
+
+    config = ConfigurationCessionImmo.objects.filter(actif=True).first()
+    if config is not None:
+        return config.compte_valeur_comptable, config.compte_produit, config.compte_creance
+    try:
+        return (
+            CompteComptable.objects.get(numero=COMPTE_VALEUR_COMPTABLE_CESSION),
+            CompteComptable.objects.get(numero=COMPTE_PRODUIT_CESSION),
+            CompteComptable.objects.get(numero=COMPTE_CREANCE_CESSION),
+        )
+    except CompteComptable.DoesNotExist as e:
+        raise ValueError(
+            "Comptes de cession introuvables : configurez ConfigurationCessionImmo "
+            "ou créez les comptes 654000/754000/485000."
+        ) from e
+
+
 def _cumul_comptabilise(immo) -> Decimal:
     agg = immo.dotations.filter(statut="COMPTABILISEE").aggregate(s=Sum("montant"))
     return agg["s"] or Decimal("0.00")
@@ -132,9 +154,7 @@ def ceder_immobilisation(immo, date_cession, prix_cession: Decimal, user) -> Pie
     cumul = _cumul_comptabilise(immo)
     vnc = immo.cout_acquisition - cumul
     journal_od = Journal.objects.get(code="OD")
-    c654 = CompteComptable.objects.get(numero=COMPTE_VALEUR_COMPTABLE_CESSION)
-    c754 = CompteComptable.objects.get(numero=COMPTE_PRODUIT_CESSION)
-    c485 = CompteComptable.objects.get(numero=COMPTE_CREANCE_CESSION)
+    c654, c754, c485 = _comptes_cession()
 
     derniere = immo.dotations.filter(
         statut="COMPTABILISEE", piece_generee__isnull=False

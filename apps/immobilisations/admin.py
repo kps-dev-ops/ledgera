@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import CategorieImmobilisation, Dotation, Immobilisation
+from .models import CategorieImmobilisation, ConfigurationCessionImmo, Dotation, Immobilisation
 
 
 @admin.register(CategorieImmobilisation)
@@ -23,3 +23,8 @@ class DotationAdmin(ModelAdmin):
     list_display = ("immobilisation", "annee", "mois", "montant", "statut")
     list_filter = ("statut", "annee")
     search_fields = ("immobilisation__code",)
+
+
+@admin.register(ConfigurationCessionImmo)
+class ConfigurationCessionImmoAdmin(ModelAdmin):
+    list_display = ("compte_valeur_comptable", "compte_produit", "compte_creance", "actif")

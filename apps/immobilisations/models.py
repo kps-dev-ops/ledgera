@@ -117,3 +117,27 @@ class Dotation(models.Model):
 
     def __str__(self):
         return f"{self.immobilisation.code} {self.annee}-{self.mois:02d} : {self.montant}"
+
+
+class ConfigurationCessionImmo(models.Model):
+    compte_valeur_comptable = models.ForeignKey(
+        "comptabilite.CompteComptable", on_delete=models.PROTECT, related_name="config_cession_vc"
+    )
+    compte_produit = models.ForeignKey(
+        "comptabilite.CompteComptable", on_delete=models.PROTECT, related_name="config_cession_produit"
+    )
+    compte_creance = models.ForeignKey(
+        "comptabilite.CompteComptable", on_delete=models.PROTECT, related_name="config_cession_creance"
+    )
+    actif = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Configuration cession immobilisation"
+        verbose_name_plural = "Configurations cession immobilisation"
+
+    def __str__(self):
+        return (
+            f"Cession : VC {self.compte_valeur_comptable.numero}"
+            f" / produit {self.compte_produit.numero}"
+            f" / créance {self.compte_creance.numero}"
+        )

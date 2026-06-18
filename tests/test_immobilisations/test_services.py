@@ -13,7 +13,12 @@ from apps.comptabilite.models import (
     Periode,
     PieceComptable,
 )
-from apps.immobilisations.models import CategorieImmobilisation, Dotation, Immobilisation
+from apps.immobilisations.models import (
+    CategorieImmobilisation,
+    ConfigurationCessionImmo,
+    Dotation,
+    Immobilisation,
+)
 from apps.immobilisations.services import ceder_immobilisation, comptabiliser_dotations, generer_plan_amortissement, next_code_immobilisation
 
 
@@ -128,6 +133,26 @@ class TestCession(ImmoTestBase):
         prix = LigneEcriture.objects.get(piece=piece, compte=self.c754).credit
         assert vnc == Decimal("9600.00")
         assert prix == Decimal("11000.00")
+
+
+class TestCessionConfigurable(ImmoTestBase):
+    def test_cession_utilise_comptes_pcg_configures(self):
+        # comptes PCG
+        c675 = CompteComptable.objects.create(numero="675000", libelle="VC cessions (PCG)", classe=6)
+        c775 = CompteComptable.objects.create(numero="775000", libelle="Produits cessions (PCG)", classe=7)
+        c462 = CompteComptable.objects.create(numero="462000", libelle="Créances cessions (PCG)", classe=4)
+        ConfigurationCessionImmo.objects.create(
+            compte_valeur_comptable=c675, compte_produit=c775, compte_creance=c462,
+        )
+        immo = self._immo()
+        generer_plan_amortissement(immo)
+        piece = ceder_immobilisation(immo, date(2026, 12, 31), Decimal("11000.00"), self.user)
+        # les comptes PCG configurés sont utilisés (et pas les 654/754/485 legacy)
+        assert LigneEcriture.objects.filter(piece=piece, compte=c675).exists()
+        assert LigneEcriture.objects.filter(piece=piece, compte=c775).exists()
+        assert LigneEcriture.objects.filter(piece=piece, compte=c462).exists()
+        assert not LigneEcriture.objects.filter(piece=piece, compte=self.c654).exists()
+        assert piece.total_debit == piece.total_credit
 
 
 class TestCloisonnement(ImmoTestBase):
