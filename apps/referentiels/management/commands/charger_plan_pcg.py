@@ -5,9 +5,9 @@ from apps.referentiels.services import charger_plan_depuis_fichier
 
 
 class Command(BaseCommand):
-    help = "Charge le plan de comptes SYSCOHADA 2017 dans les référentiels (idempotent)"
+    help = "Charge le plan de comptes PCG français (2014) dans les référentiels (idempotent)"
 
     def handle(self, *args, **options):
-        plan = charger_plan_depuis_fichier("syscohada_2017.json")
+        plan = charger_plan_depuis_fichier("pcg_2014.json")
         total = CompteType.objects.filter(plan=plan).count()
-        self.stdout.write(self.style.SUCCESS(f"Plan SYSCOHADA chargé — {total} comptes."))
+        self.stdout.write(self.style.SUCCESS(f"Plan PCG chargé — {total} comptes."))
