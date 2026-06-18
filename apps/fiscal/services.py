@@ -1,6 +1,6 @@
 import calendar
 from datetime import date
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 from django.db.models import Sum
@@ -8,7 +8,7 @@ from django.db.models import Sum
 from apps.comptabilite.models import Exercice, LigneEcriture, PieceComptable
 from apps.comptabilite.services import valider_piece
 
-from .models import DeclarationTVA
+from .models import DeclarationIS, DeclarationTVA, RetraitementFiscal
 
 
 def _bornes_periode(periodicite: str, annee: int, periode_num: int) -> tuple[date, date]:
@@ -129,3 +129,49 @@ def generer_bordereau_pdf(declaration) -> bytes:
     from apps.imports_exports.services.pdf import render_pdf
 
     return render_pdf("fiscal/bordereau_tva.html", {"declaration": declaration})
+
+
+def resultat_comptable(exercice) -> Decimal:
+    """Produits (classe 7) − charges (classe 6) sur les écritures validées."""
+    rows = (
+        LigneEcriture.objects.filter(piece__exercice=exercice, piece__statut="VALIDEE")
+        .values("compte__classe")
+        .annotate(d=Sum("debit"), c=Sum("credit"))
+    )
+    produits = charges = Decimal("0.00")
+    for r in rows:
+        d = r["d"] or Decimal("0.00")
+        c = r["c"] or Decimal("0.00")
+        if r["compte__classe"] == 7:
+            produits += c - d
+        elif r["compte__classe"] == 6:
+            charges += d - c
+    return produits - charges
+
+
+def recalculer(declaration):
+    reint = declaration.retraitements.filter(sens="REINTEGRATION").aggregate(s=Sum("montant"))["s"] or Decimal("0.00")
+    deduc = declaration.retraitements.filter(sens="DEDUCTION").aggregate(s=Sum("montant"))["s"] or Decimal("0.00")
+    declaration.total_reintegrations = reint
+    declaration.total_deductions = deduc
+    declaration.resultat_fiscal = declaration.resultat_comptable + reint - deduc
+    base = declaration.resultat_fiscal if declaration.resultat_fiscal > 0 else Decimal("0.00")
+    taux = declaration.configuration.taux
+    declaration.impot = (base * taux / Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    declaration.save()
+    return declaration
+
+
+@transaction.atomic
+def creer_declaration_is(config, exercice, user):
+    decl, _ = DeclarationIS.objects.get_or_create(configuration=config, exercice=exercice)
+    decl.resultat_comptable = resultat_comptable(exercice)
+    decl.save(update_fields=["resultat_comptable"])
+    return recalculer(decl)
+
+
+@transaction.atomic
+def ajouter_retraitement(declaration, libelle, montant, sens):
+    rt = RetraitementFiscal.objects.create(declaration=declaration, libelle=libelle, montant=montant, sens=sens)
+    recalculer(declaration)
+    return rt
