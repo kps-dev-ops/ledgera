@@ -62,3 +62,71 @@ class DeclarationTVA(models.Model):
 
     def __str__(self):
         return f"TVA {self.periode_num:02d}/{self.annee} — net {self.tva_nette}"
+
+
+class ConfigurationIS(models.Model):
+    libelle = models.CharField(max_length=200)
+    taux = models.DecimalField(max_digits=5, decimal_places=2, help_text="Pourcentage, ex. 30.00")
+    compte_charge_impot = models.ForeignKey(
+        "comptabilite.CompteComptable", on_delete=models.PROTECT, related_name="config_is_charge"
+    )
+    compte_dette_impot = models.ForeignKey(
+        "comptabilite.CompteComptable", on_delete=models.PROTECT, related_name="config_is_dette"
+    )
+    journal = models.ForeignKey("comptabilite.Journal", on_delete=models.PROTECT, related_name="config_is")
+    actif = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Configuration IS"
+        verbose_name_plural = "Configurations IS"
+        ordering = ["libelle"]
+
+    def __str__(self):
+        return f"{self.libelle} ({self.taux}%)"
+
+
+class DeclarationIS(models.Model):
+    STATUT_CHOICES = [("BROUILLON", "Brouillon"), ("VALIDEE", "Validée")]
+
+    configuration = models.ForeignKey(ConfigurationIS, on_delete=models.PROTECT, related_name="declarations")
+    exercice = models.ForeignKey("comptabilite.Exercice", on_delete=models.PROTECT, related_name="declarations_is")
+    resultat_comptable = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    total_reintegrations = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    total_deductions = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    resultat_fiscal = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    impot = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal("0.00"))
+    statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default="BROUILLON")
+    piece_imposition = models.ForeignKey(
+        "comptabilite.PieceComptable", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="declarations_is",
+    )
+    bordereau = models.FileField(upload_to="bordereaux_is/", null=True, blank=True)
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Déclaration IS"
+        verbose_name_plural = "Déclarations IS"
+        ordering = ["-exercice"]
+        constraints = [
+            models.UniqueConstraint(fields=["configuration", "exercice"], name="declaration_is_unique_exercice"),
+        ]
+
+    def __str__(self):
+        return f"IS {self.exercice} — impôt {self.impot}"
+
+
+class RetraitementFiscal(models.Model):
+    SENS_CHOICES = [("REINTEGRATION", "Réintégration"), ("DEDUCTION", "Déduction")]
+
+    declaration = models.ForeignKey(DeclarationIS, on_delete=models.CASCADE, related_name="retraitements")
+    libelle = models.CharField(max_length=200)
+    montant = models.DecimalField(max_digits=15, decimal_places=2)
+    sens = models.CharField(max_length=15, choices=SENS_CHOICES)
+
+    class Meta:
+        verbose_name = "Retraitement fiscal"
+        verbose_name_plural = "Retraitements fiscaux"
+        ordering = ["id"]
+
+    def __str__(self):
+        return f"{self.get_sens_display()} {self.libelle} : {self.montant}"
