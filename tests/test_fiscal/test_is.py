@@ -17,9 +17,11 @@ from apps.comptabilite.services import valider_piece
 from apps.fiscal.models import ConfigurationIS, DeclarationIS
 from apps.fiscal.services import (
     ajouter_retraitement,
+    comptabiliser_impot,
     creer_declaration_is,
     resultat_comptable,
 )
+from apps.comptabilite.models import LigneEcriture as _LE
 
 
 class ISTestBase(TenantTestCase):
@@ -95,3 +97,30 @@ class TestDeclarationIS(ISTestBase):
         decl = creer_declaration_is(self.config, self.ex, self.user)
         assert decl.resultat_fiscal == Decimal("-3000.00")
         assert decl.impot == Decimal("0.00")
+
+
+class TestComptabilisationIS(ISTestBase):
+    def test_comptabilise_impot_equilibre(self):
+        self._benefice(10000, 6000)
+        decl = creer_declaration_is(self.config, self.ex, self.user)
+        piece = comptabiliser_impot(decl, self.user)
+        decl.refresh_from_db()
+        assert decl.statut == "VALIDEE" and decl.piece_imposition_id == piece.id
+        assert piece.statut == "VALIDEE" and piece.total_debit == piece.total_credit == Decimal("1200.00")
+        assert _LE.objects.filter(piece=piece, compte=self.c891, debit=Decimal("1200.00")).exists()
+        assert _LE.objects.filter(piece=piece, compte=self.c441, credit=Decimal("1200.00")).exists()
+
+    def test_deficit_pas_de_piece_mais_validee(self):
+        self._benefice(5000, 8000)
+        decl = creer_declaration_is(self.config, self.ex, self.user)
+        piece = comptabiliser_impot(decl, self.user)
+        decl.refresh_from_db()
+        assert piece is None and decl.statut == "VALIDEE"
+
+    def test_refuse_recomptabilisation(self):
+        import pytest
+        self._benefice(10000, 6000)
+        decl = creer_declaration_is(self.config, self.ex, self.user)
+        comptabiliser_impot(decl, self.user)
+        with pytest.raises(ValueError):
+            comptabiliser_impot(decl, self.user)

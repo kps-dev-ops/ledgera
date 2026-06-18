@@ -171,6 +171,30 @@ def creer_declaration_is(config, exercice, user):
 
 
 @transaction.atomic
+def comptabiliser_impot(declaration, user):
+    if declaration.statut == "VALIDEE":
+        raise ValueError("Déclaration IS déjà comptabilisée")
+    config = declaration.configuration
+    piece = None
+    if declaration.impot > 0:
+        piece = PieceComptable.objects.create(
+            journal=config.journal, exercice=declaration.exercice,
+            date_piece=declaration.exercice.date_fin, reference=f"IS-{declaration.exercice.code}",
+            libelle=f"Impôt sur les bénéfices {declaration.exercice.code}",
+            statut="BROUILLARD", auteur=user,
+        )
+        LigneEcriture.objects.create(piece=piece, numero_ligne=1, compte=config.compte_charge_impot,
+                                     libelle="Charge d'impôt", debit=declaration.impot, credit=Decimal("0.00"))
+        LigneEcriture.objects.create(piece=piece, numero_ligne=2, compte=config.compte_dette_impot,
+                                     libelle="Dette d'impôt", debit=Decimal("0.00"), credit=declaration.impot)
+        valider_piece(piece, user)
+        declaration.piece_imposition = piece
+    declaration.statut = "VALIDEE"
+    declaration.save(update_fields=["statut", "piece_imposition"])
+    return piece
+
+
+@transaction.atomic
 def ajouter_retraitement(declaration, libelle, montant, sens):
     rt = RetraitementFiscal.objects.create(declaration=declaration, libelle=libelle, montant=montant, sens=sens)
     recalculer(declaration)
