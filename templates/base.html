@@ -64,6 +64,25 @@
                             </ul>
                         </details>
                     </li>
+                    {% if request.societes_disponibles|length > 1 %}
+                    <li>
+                        <details>
+                            <summary class="font-medium">
+                                <i data-lucide="building-2"></i> {{ request.tenant.code|default:"Société" }}
+                            </summary>
+                            <ul class="bg-base-100 rounded-box z-50 w-64 shadow-lg border border-base-300">
+                                <li class="menu-title"><span class="text-xs">Changer de société</span></li>
+                                {% for s in request.societes_disponibles %}
+                                <li>
+                                    <a href="{% url 'activer_societe' s.pk %}" class="{% if request.tenant and s.pk == request.tenant.pk %}active font-semibold{% endif %}">
+                                        {{ s.code }} — {{ s.raison_sociale }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                    </li>
+                    {% endif %}
                     <li>
                         <details>
                             <summary class="font-medium">
