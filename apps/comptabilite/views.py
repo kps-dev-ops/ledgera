@@ -8,6 +8,8 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import DetailView, ListView
 
+from apps.core.decorators import exige_permission
+
 from .forms import LigneFormSet, PieceForm
 from .models import Exercice, LigneEcriture, PieceComptable
 from .selectors import apercu_cloture, search_comptes, search_tiers
@@ -43,6 +45,7 @@ class PieceDetailView(LoginRequiredMixin, DetailView):
 
 
 @login_required
+@exige_permission("saisir_brouillard")
 def piece_create(request):
     if request.method == "POST":
         form = PieceForm(request.POST)
@@ -68,6 +71,7 @@ def piece_create(request):
 
 
 @login_required
+@exige_permission("saisir_brouillard")
 def piece_update(request, pk):
     piece = get_object_or_404(PieceComptable, pk=pk)
     if piece.statut != "BROUILLARD":
@@ -94,6 +98,7 @@ def piece_update(request, pk):
 
 
 @login_required
+@exige_permission("valider_piece")
 def piece_valider_view(request, pk):
     piece = get_object_or_404(PieceComptable, pk=pk)
     if request.method != "POST":
@@ -176,6 +181,7 @@ def grand_livre_tiers(request, tiers_id):
 
 
 @login_required
+@exige_permission("saisir_brouillard")
 def lettrer_view(request):
     if request.method != "POST":
         return HttpResponseForbidden("POST requis")
@@ -193,6 +199,7 @@ def lettrer_view(request):
 
 
 @login_required
+@exige_permission("saisir_brouillard")
 def delettrer_view(request, tiers_id, code_lettre):
     if request.method != "POST":
         return HttpResponseForbidden("POST requis")
@@ -202,6 +209,7 @@ def delettrer_view(request, tiers_id, code_lettre):
 
 
 @login_required
+@exige_permission("saisir_brouillard")
 def piece_supprimer_brouillard(request, pk):
     piece = get_object_or_404(PieceComptable, pk=pk)
     if piece.statut != "BROUILLARD":
@@ -216,11 +224,13 @@ def piece_supprimer_brouillard(request, pk):
 # --- Clôture d'exercice ---
 
 @login_required
+@exige_permission("cloturer_exercice")
 def cloture_liste(request):
     return render(request, "comptabilite/cloture.html", {"exercices": Exercice.objects.all()})
 
 
 @login_required
+@exige_permission("cloturer_exercice")
 def cloture(request, pk):
     exercice = get_object_or_404(Exercice, pk=pk)
     if request.method == "POST" and exercice.statut != "CLOTURE":
