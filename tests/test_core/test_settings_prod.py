@@ -25,8 +25,18 @@ def test_debug_desactive(monkeypatch):
 
 def test_allowed_hosts_et_csrf_depuis_env(monkeypatch):
     prod = _charger_prod(monkeypatch, ALLOWED_HOSTS="ledgera.ubbfy.com")
-    assert prod.ALLOWED_HOSTS == ["ledgera.ubbfy.com"]
+    assert prod.DOMAINES_PUBLICS == ["ledgera.ubbfy.com"]
+    # CSRF : seulement le domaine public, jamais les hôtes internes
     assert prod.CSRF_TRUSTED_ORIGINS == ["https://ledgera.ubbfy.com"]
+
+
+def test_allowed_hosts_accepte_les_sondes_internes(monkeypatch):
+    """Le HEALTHCHECK Docker interroge localhost : sans ces hôtes, Django renvoie 400
+    et le conteneur reste unhealthy, bloquant le déploiement."""
+    prod = _charger_prod(monkeypatch, ALLOWED_HOSTS="ledgera.ubbfy.com")
+    assert "ledgera.ubbfy.com" in prod.ALLOWED_HOSTS
+    assert "localhost" in prod.ALLOWED_HOSTS
+    assert "127.0.0.1" in prod.ALLOWED_HOSTS
 
 
 def test_cookies_securises_et_proxy_tls(monkeypatch):

@@ -1,0 +1,92 @@
+# Compose de PREPROD / PRODUCTION.
+#
+# Différences avec docker-compose.yml (qui est un environnement de DÉVELOPPEMENT) :
+#   - settings de prod, aucun secret en dur : tout vient de l'environnement ;
+#   - pas de volume monté sur le code (l'image est immuable) ;
+#   - pas de port PostgreSQL/Redis exposé sur l'hôte ;
+#   - Celery beat présent (dotations mensuelles).
+#
+# Sur Coolify, les variables ci-dessous se renseignent dans l'interface.
+# Rappel : un SEUL domaine (ex. ledgera.ubbfy.com) — la société active est choisie
+# par l'utilisateur connecté, pas par le nom d'hôte.
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile
+  environment: &app-env
+    DJANGO_SETTINGS_MODULE: config.settings.prod
+    SECRET_KEY: ${SECRET_KEY:?SECRET_KEY est obligatoire}
+    ALLOWED_HOSTS: ${ALLOWED_HOSTS:?ex. ledgera.ubbfy.com}
+    DATABASE_URL: postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_NAME: ${DB_NAME}
+    DB_USER: ${DB_USER}
+    DB_PASSWORD: ${DB_PASSWORD}
+    REDIS_URL: redis://redis:6379/0
+    # SMTP — obligatoire : allauth exige la vérification d'email pour se connecter.
+    EMAIL_HOST: ${EMAIL_HOST:?SMTP obligatoire}
+    EMAIL_PORT: ${EMAIL_PORT:-465}
+    EMAIL_USE_SSL: ${EMAIL_USE_SSL:-true}
+    EMAIL_USE_TLS: ${EMAIL_USE_TLS:-false}
+    EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+    EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+    DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-${EMAIL_HOST_USER}}
+    # HSTS : 0 = désactivé. Irréversible côté navigateur une fois activé.
+    SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-0}
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  restart: unless-stopped
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?mot de passe DB obligatoire}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Pas de `ports:` : la base n'est joignable que depuis le réseau interne.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  web:
+    <<: *app
+    # L'entrypoint enchaîne migrations (shared + tenants), collectstatic, puis Gunicorn.
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+
+  worker:
+    <<: *app
+    entrypoint: []
+    command: celery -A config worker -l "${LOG_LEVEL:-INFO}"
+    volumes:
+      - media_data:/app/media
+
+  beat:
+    <<: *app
+    entrypoint: []
+    command: celery -A config beat -l "${LOG_LEVEL:-INFO}" --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:

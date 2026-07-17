@@ -20,8 +20,17 @@ DEBUG = False
 
 # --- Domaine ---------------------------------------------------------------
 # Obligatoire : sans lui, Django refuserait toutes les requêtes (DEBUG=False).
-ALLOWED_HOSTS = [h.strip() for h in os.environ["ALLOWED_HOSTS"].split(",") if h.strip()]
-CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in ALLOWED_HOSTS]
+# Domaine unique : le tenant vient de l'utilisateur connecté, pas de l'hôte.
+DOMAINES_PUBLICS = [h.strip() for h in os.environ["ALLOWED_HOSTS"].split(",") if h.strip()]
+
+# CSRF : uniquement les domaines publics réellement servis en HTTPS.
+CSRF_TRUSTED_ORIGINS = [f"https://{h}" for h in DOMAINES_PUBLICS]
+
+# Les sondes de santé (HEALTHCHECK Docker / Coolify) interrogent le conteneur en
+# local. Sans ces hôtes, Django répondrait 400 (DisallowedHost) et le conteneur
+# serait marqué unhealthy en permanence. Ils ne sont pas joignables de l'extérieur
+# (seul le reverse proxy expose l'application).
+ALLOWED_HOSTS = [*DOMAINES_PUBLICS, "localhost", "127.0.0.1"]
 
 # --- Sécurité derrière le reverse proxy ------------------------------------
 # Traefik/Coolify terminent le TLS et transmettent l'en-tête ci-dessous ; sans elle,
