@@ -14,7 +14,8 @@ class Command(BaseCommand):
         parser.add_argument("--devise", required=True)
         parser.add_argument("--referentiel", required=True)
         parser.add_argument("--plan", required=True, help="Code du PlanComptableType (ex. PCG_2014)")
-        parser.add_argument("--domaine", required=True)
+        parser.add_argument("--domaine", default=None,
+                            help="Optionnel : le routage se fait par utilisateur, pas par domaine.")
         parser.add_argument("--annee", type=int, default=2026)
 
     def handle(self, *args, **o):

@@ -43,3 +43,13 @@ def test_provisionner_plan_inexistant():
             code="X", schema_name="x", raison_sociale="X", pays="FR", devise="EUR",
             referentiel="PCG", plan_code="PLAN_INEXISTANT", domaine="x.localhost",
         )
+
+
+@pytest.mark.django_db
+def test_provisionner_sans_domaine():
+    call_command("charger_plan_pcg")
+    societe = provisionner_societe(
+        code="SANS_DOM", schema_name="sans_dom", raison_sociale="Sans domaine SAS",
+        pays="FR", devise="EUR", referentiel="PCG", plan_code="PCG_2014",
+    )
+    assert Domain.objects.filter(tenant=societe, domain="sans_dom.local").exists()

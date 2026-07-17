@@ -5,9 +5,14 @@ from apps.tenants.models import Domain, Societe
 
 
 def provisionner_societe(*, code, schema_name, raison_sociale, pays, devise, referentiel,
-                         plan_code, domaine, annee_exercice=2026) -> Societe:
+                         plan_code, domaine=None, annee_exercice=2026) -> Societe:
     """Crée (idempotent) une société + son domaine et initialise, dans son schema, le
     plan de comptes, les journaux par défaut et l'exercice courant.
+
+    Le domaine est optionnel et non routant : le routage multi-tenant se fait par
+    utilisateur connecté (cf. TenantSessionMiddleware). Il reste requis techniquement
+    par django-tenants (TENANT_DOMAIN_MODEL) ; à défaut, un domaine local est dérivé
+    du schema_name.
     """
     plan = PlanComptableType.objects.filter(code=plan_code).first()
     if plan is None:
@@ -15,6 +20,7 @@ def provisionner_societe(*, code, schema_name, raison_sociale, pays, devise, ref
             f"Plan de comptes type '{plan_code}' introuvable. "
             f"Chargez-le d'abord (ex. manage.py charger_plan_pcg)."
         )
+    domaine = domaine or f"{schema_name}.local"
     societe, _ = Societe.objects.get_or_create(
         code=code,
         defaults={
