@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
 from apps.comptabilite.models import Exercice
+from apps.core.decorators import PermissionRequiseMixin, exige_permission
 
 from .exports import tableau_immobilisations_xlsx
 from .forms import CessionForm, ImmobilisationForm
@@ -45,7 +46,8 @@ class ImmobilisationListView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class ImmobilisationCreateView(LoginRequiredMixin, CreateView):
+class ImmobilisationCreateView(PermissionRequiseMixin, LoginRequiredMixin, CreateView):
+    permission_requise = "saisir_brouillard"
     model = Immobilisation
     form_class = ImmobilisationForm
     template_name = "immobilisations/immobilisation_form.html"
@@ -60,7 +62,8 @@ class ImmobilisationCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("immobilisations:immo_detail", kwargs={"pk": self.object.pk})
 
 
-class ImmobilisationUpdateView(LoginRequiredMixin, UpdateView):
+class ImmobilisationUpdateView(PermissionRequiseMixin, LoginRequiredMixin, UpdateView):
+    permission_requise = "saisir_brouillard"
     model = Immobilisation
     form_class = ImmobilisationForm
     template_name = "immobilisations/immobilisation_form.html"
@@ -98,6 +101,7 @@ def comptes_categorie(request):
     return render(request, "immobilisations/partials/comptes_categorie.html", {"c": categorie})
 
 
+@exige_permission("valider_piece")
 def ceder(request, pk):
     immo = get_object_or_404(Immobilisation, pk=pk)
     form = CessionForm(request.POST)
@@ -108,6 +112,7 @@ def ceder(request, pk):
     return redirect("immobilisations:immo_detail", pk=pk)
 
 
+@exige_permission("valider_piece")
 def comptabiliser(request):
     exercices = Exercice.objects.all()
     if request.method == "POST":

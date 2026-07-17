@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView
 
 from apps.comptabilite.models import LigneEcriture
+from apps.core.decorators import PermissionRequiseMixin, exige_permission
 
 from .forms import CompteBancaireForm, ImportReleveForm
 from .models import CompteBancaire, LigneReleve, ReleveBancaire
@@ -24,13 +25,15 @@ class CompteBancaireListView(LoginRequiredMixin, ListView):
     context_object_name = "comptes"
 
 
-class CompteBancaireCreateView(LoginRequiredMixin, CreateView):
+class CompteBancaireCreateView(PermissionRequiseMixin, LoginRequiredMixin, CreateView):
+    permission_requise = "saisir_brouillard"
     model = CompteBancaire
     form_class = CompteBancaireForm
     template_name = "banque/compte_form.html"
     success_url = reverse_lazy("banque:compte_list")
 
 
+@exige_permission("saisir_brouillard")
 def importer_releve(request):
     form = ImportReleveForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
@@ -54,12 +57,14 @@ def rapprochement(request, pk):
     return render(request, "banque/rapprochement.html", ctx)
 
 
+@exige_permission("saisir_brouillard")
 def pointer_auto(request, pk):
     releve = get_object_or_404(ReleveBancaire, pk=pk)
     pointer_automatiquement(releve)
     return redirect("banque:rapprochement", pk=pk)
 
 
+@exige_permission("saisir_brouillard")
 def pointer_manuel(request, ligne_pk):
     ligne = get_object_or_404(LigneReleve, pk=ligne_pk)
     ecriture = get_object_or_404(LigneEcriture, pk=request.POST.get("ecriture"))
@@ -70,6 +75,7 @@ def pointer_manuel(request, ligne_pk):
     return redirect("banque:rapprochement", pk=ligne.releve_id)
 
 
+@exige_permission("saisir_brouillard")
 def depointer_ligne(request, ligne_pk):
     ligne = get_object_or_404(LigneReleve, pk=ligne_pk)
     depointer(ligne)

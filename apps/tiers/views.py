@@ -2,6 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 
+from apps.core.decorators import PermissionRequiseMixin
+
 from .forms import TiersForm
 from .models import Tiers
 from .services import next_code_auxiliaire
@@ -33,7 +35,8 @@ class TiersDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "tiers"
 
 
-class TiersCreateView(LoginRequiredMixin, CreateView):
+class TiersCreateView(PermissionRequiseMixin, LoginRequiredMixin, CreateView):
+    permission_requise = "saisir_brouillard"
     model = Tiers
     form_class = TiersForm
     template_name = "tiers/tiers_form.html"
@@ -46,7 +49,8 @@ class TiersCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("tiers:tiers_detail", kwargs={"pk": self.object.pk})
 
 
-class TiersUpdateView(LoginRequiredMixin, UpdateView):
+class TiersUpdateView(PermissionRequiseMixin, LoginRequiredMixin, UpdateView):
+    permission_requise = "saisir_brouillard"
     model = Tiers
     form_class = TiersForm
     template_name = "tiers/tiers_form.html"

@@ -2,6 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
+from apps.core.decorators import exige_permission
+
 from .forms import DeclarationAIBForm, DeclarationISForm, DeclarationPeriodeForm, RetraitementForm
 from .models import DeclarationAIB, DeclarationIS, DeclarationTVA
 from .services import (
@@ -19,6 +21,7 @@ from .services import (
 
 
 @login_required
+@exige_permission("editer_declarations", methodes=("POST",))
 def declaration_list(request):
     form = DeclarationPeriodeForm(request.POST or None)
     decl = None
@@ -34,6 +37,7 @@ def declaration_list(request):
 
 
 @login_required
+@exige_permission("valider_piece")
 def liquider(request, pk):
     decl = get_object_or_404(DeclarationTVA, pk=pk)
     if decl.statut != "VALIDEE":
@@ -51,6 +55,7 @@ def bordereau(request, pk):
 
 
 @login_required
+@exige_permission("editer_declarations", methodes=("POST",))
 def is_list(request):
     form = DeclarationISForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
@@ -62,6 +67,7 @@ def is_list(request):
 
 
 @login_required
+@exige_permission("editer_declarations", methodes=("POST",))
 def is_detail(request, pk):
     decl = get_object_or_404(DeclarationIS, pk=pk)
     if request.method == "POST" and decl.statut != "VALIDEE":
@@ -75,6 +81,7 @@ def is_detail(request, pk):
 
 
 @login_required
+@exige_permission("valider_piece")
 def is_comptabiliser(request, pk):
     decl = get_object_or_404(DeclarationIS, pk=pk)
     if decl.statut != "VALIDEE":
@@ -92,6 +99,7 @@ def is_bordereau(request, pk):
 
 
 @login_required
+@exige_permission("editer_declarations", methodes=("POST",))
 def aib_list(request):
     form = DeclarationAIBForm(request.POST or None)
     decl = None
@@ -107,6 +115,7 @@ def aib_list(request):
 
 
 @login_required
+@exige_permission("valider_piece")
 def aib_comptabiliser(request, pk):
     decl = get_object_or_404(DeclarationAIB, pk=pk)
     if decl.statut != "VALIDEE":

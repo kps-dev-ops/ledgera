@@ -71,3 +71,53 @@ def test_admin_peut_acceder_cloture(client, societe):
 def test_tous_les_roles_consultent_les_etats(client, societe, role):
     c = _client_avec_role(client, societe, role)
     assert c.get("/etats/balance/").status_code == 200
+
+
+@pytest.mark.django_db
+def test_auditeur_ne_peut_pas_creer_immo(client, societe):
+    c = _client_avec_role(client, societe, "auditeur")
+    assert c.get("/compta/immos/nouvelle/").status_code == 403
+
+
+@pytest.mark.django_db
+def test_junior_ne_peut_pas_comptabiliser_dotations(client, societe):
+    c = _client_avec_role(client, societe, "comptable_junior")
+    assert c.get("/compta/immos/comptabiliser/").status_code == 403
+
+
+@pytest.mark.django_db
+def test_auditeur_ne_peut_pas_creer_tiers(client, societe):
+    c = _client_avec_role(client, societe, "auditeur")
+    assert c.get("/tiers/nouveau/").status_code == 403
+
+
+@pytest.mark.django_db
+def test_junior_peut_creer_tiers(client, societe):
+    c = _client_avec_role(client, societe, "comptable_junior")
+    assert c.get("/tiers/nouveau/").status_code == 200
+
+
+@pytest.mark.django_db
+def test_auditeur_ne_peut_pas_importer_releve(client, societe):
+    c = _client_avec_role(client, societe, "auditeur")
+    assert c.get("/compta/banque/releves/importer/").status_code == 403
+
+
+@pytest.mark.django_db
+def test_daf_consulte_tva_mais_ne_declare_pas(client, societe):
+    c = _client_avec_role(client, societe, "daf_lecture")
+    assert c.get("/compta/fiscal/tva/").status_code == 200      # lecture libre
+    assert c.post("/compta/fiscal/tva/").status_code == 403     # écriture refusée
+
+
+@pytest.mark.django_db
+def test_senior_peut_poster_declaration_tva(client, societe):
+    c = _client_avec_role(client, societe, "comptable_senior")
+    # formulaire vide => la vue re-rend (200), l'essentiel est que ce ne soit PAS 403
+    assert c.post("/compta/fiscal/tva/").status_code == 200
+
+
+@pytest.mark.django_db
+def test_junior_ne_peut_pas_liquider_tva(client, societe):
+    c = _client_avec_role(client, societe, "comptable_junior")
+    assert c.get("/compta/fiscal/tva/1/liquider/").status_code == 403
