@@ -45,7 +45,7 @@
                                 <li><a href="{% url 'etats:journal' %}"><i data-lucide="calendar-days"></i> Journal</a></li>
                                 <li><a href="{% url 'etats:bilan' %}"><i data-lucide="scale"></i> Bilan SYSCOHADA</a></li>
                                 <li><a href="{% url 'etats:compte_resultat' %}"><i data-lucide="trending-up"></i> Compte de résultat</a></li>
-                                <li><a href="{% url 'comptabilite:cloture_liste' %}"><i data-lucide="lock"></i> Clôture d'exercice</a></li>
+                                {% if "cloturer_exercice" in request.permissions %}<li><a href="{% url 'comptabilite:cloture_liste' %}"><i data-lucide="lock"></i> Clôture d'exercice</a></li>{% endif %}
                             </ul>
                         </details>
                     </li>

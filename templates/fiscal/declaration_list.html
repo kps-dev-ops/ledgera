@@ -9,9 +9,9 @@
 </div>
 
 <div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
-  <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+  {% if "editer_declarations" in request.permissions %}<form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
     <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Calculer</button>
-  </form>
+  </form>{% endif %}
   {% if declaration %}
   <div class="grid grid-cols-3 gap-4 mt-4">
     <div><div class="text-xs uppercase opacity-50">Collectée</div><div class="text-lg font-bold font-mono tabular-nums">{{ declaration.tva_collectee }}</div></div>
@@ -34,7 +34,7 @@
         <td class="text-right font-mono tabular-nums font-semibold">{{ d.tva_nette }}</td>
         <td>{% if d.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>{% else %}<span class="badge badge-ghost">Brouillon</span>{% endif %}</td>
         <td class="text-right">
-          {% if d.statut != "VALIDEE" %}<a href="{% url 'fiscal:liquider' d.pk %}" class="btn btn-ghost btn-xs">Liquider</a>{% endif %}
+          {% if d.statut != "VALIDEE" and "valider_piece" in request.permissions %}<a href="{% url 'fiscal:liquider' d.pk %}" class="btn btn-ghost btn-xs">Liquider</a>{% endif %}
           <a href="{% url 'fiscal:bordereau' d.pk %}" class="btn btn-ghost btn-xs">PDF</a>
         </td>
       </tr>

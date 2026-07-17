@@ -16,12 +16,12 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <a href="{% url 'banque:releve_import' %}" class="btn btn-ghost btn-sm gap-2">
+      {% if "saisir_brouillard" in request.permissions %}<a href="{% url 'banque:releve_import' %}" class="btn btn-ghost btn-sm gap-2">
         <i data-lucide="upload"></i> Importer un relevé
-      </a>
-      <a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2 shadow">
+      </a>{% endif %}
+      {% if "saisir_brouillard" in request.permissions %}<a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2 shadow">
         <i data-lucide="plus"></i> Nouveau compte
-      </a>
+      </a>{% endif %}
     </div>
   </div>
 
@@ -74,9 +74,9 @@
                     <p class="font-medium">Aucun compte bancaire</p>
                     <p class="text-sm opacity-50">Créez un compte pour importer ses relevés et lancer le rapprochement.</p>
                   </div>
-                  <a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2">
+                  {% if "saisir_brouillard" in request.permissions %}<a href="{% url 'banque:compte_create' %}" class="btn btn-primary btn-sm gap-2">
                     <i data-lucide="plus"></i> Nouveau compte
-                  </a>
+                  </a>{% endif %}
                 </div>
               </td>
             </tr>
