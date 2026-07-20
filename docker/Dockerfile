@@ -64,6 +64,18 @@ COPY --from=tailwind /build/theme/static/css/dist ./theme/static/css/dist
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# collectstatic au BUILD, pas au demarrage : les fichiers statiques ne dependent
+# pas de la configuration runtime. WhiteNoise (CompressedManifestStaticFilesStorage)
+# compresse chaque fichier en gzip ET brotli — inutile de le refaire a chaque
+# demarrage du conteneur. Bonus : une erreur de statiques casse le build au lieu
+# de casser la production.
+# Les valeurs ci-dessous ne servent qu'a charger les settings ; elles ne sont ni
+# conservees dans l'image ni utilisees a l'execution (l'environnement reel prime).
+RUN SECRET_KEY=build-only-jamais-utilise-a-l-execution \
+    ALLOWED_HOSTS=localhost \
+    EMAIL_HOST=localhost \
+    python manage.py collectstatic --noinput --clear
+
 # Utilisateur non privilégié : une faille applicative ne donne pas root dans le
 # conteneur. /app doit rester inscriptible : collectstatic écrit dans staticfiles/
 # au démarrage, et media/ reçoit les fichiers importés.

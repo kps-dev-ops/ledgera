@@ -65,10 +65,8 @@ echo "Migrations des schemas tenants..."
 # l'ajout d'une TENANT_APP ou d'une migration metier.
 python manage.py migrate_schemas --tenant --noinput
 
-echo "Collecte des fichiers statiques..."
-# A l'execution et non au build : le storage manifeste de WhiteNoise a besoin des
-# settings, donc des variables d'environnement.
-python manage.py collectstatic --noinput --clear
+# Les fichiers statiques sont deja collectes et compresses au BUILD (cf. Dockerfile) :
+# rien a faire ici, le conteneur demarre d'autant plus vite.
 
 echo "Demarrage Gunicorn..."
 exec gunicorn config.wsgi:application \
