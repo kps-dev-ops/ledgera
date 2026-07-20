@@ -91,26 +91,81 @@ def client_admin(client, db):
 
 
 @pytest.mark.django_db
-def test_la_liste_des_tiers_pagine_reellement(client_admin):
-    """La vue paginait déjà à 50 ; seul l'affichage manquait."""
+def test_toutes_les_lignes_sont_atteignables_et_aucune_n_est_dupliquee(client_admin):
+    """L'invariant qui compte : parcourir toutes les pages doit restituer l'ensemble
+    des enregistrements, chacun exactement une fois.
+
+    La vue paginait déjà, mais aucun contrôle n'était affiché : les tiers au-delà de
+    la première page étaient inatteignables. On vérifie ici le parcours complet plutôt
+    qu'une page précise, pour que le test reste vrai si `paginate_by` change.
+    """
+    import math
+
     from django_tenants.utils import tenant_context
 
     from apps.comptabilite.models import CompteComptable
     from apps.tiers.models import Tiers
+    from apps.tiers.views import TiersListView
 
     client, societe = client_admin
+    total = 60
     with tenant_context(societe):
         collectif = CompteComptable.objects.get(numero="4111")
         Tiers.objects.bulk_create([
             Tiers(type_tiers="CLIENT", code_auxiliaire=f"C{i:04d}",
                   compte_collectif=collectif, raison_sociale=f"Client {i}")
-            for i in range(60)
+            for i in range(total)
         ])
 
     html = client.get(reverse("tiers:tiers_list")).content.decode()
     assert 'aria-label="Pagination"' in html, "aucun contrôle de pagination affiché"
-    assert "60 lignes" in html
+    assert f"{total} lignes" in html
 
-    # Le 60e tiers doit être atteignable — c'était le vrai problème.
-    page2 = client.get(reverse("tiers:tiers_list"), {"page": 2}).content.decode()
-    assert "C0059" in page2
+    nb_pages = math.ceil(total / TiersListView.paginate_by)
+    vus: list[str] = []
+    for numero in range(1, nb_pages + 1):
+        page = client.get(reverse("tiers:tiers_list"), {"page": numero}).content.decode()
+        vus += [f"C{i:04d}" for i in range(total) if f"C{i:04d}" in page]
+
+    assert len(vus) == len(set(vus)), "un tiers apparaît sur plusieurs pages"
+    assert set(vus) == {f"C{i:04d}" for i in range(total)}, "des tiers ne sont sur aucune page"
+
+
+@pytest.mark.django_db
+def test_la_liste_des_pieces_pagine_au_dela_du_seuil(client_admin):
+    """Documente le seuil : tant qu'il n'y a qu'une page, le composant ne s'affiche
+    pas — c'est voulu, mais cela se confond facilement avec une pagination cassée.
+
+    Le seuil est lu sur la vue plutôt qu'écrit en dur : le test doit rester vrai si
+    `paginate_by` change."""
+    from django.core.management import call_command
+    from django_tenants.utils import tenant_context
+
+    from apps.comptabilite.models import PieceComptable
+    from apps.comptabilite.views import PieceListView
+
+    client, societe = client_admin
+    call_command("jeu_demo", "--societe", "PAGE", "--mois", "12")
+
+    with tenant_context(societe):
+        total = PieceComptable.objects.count()
+    assert total > PieceListView.paginate_by, (
+        f"le jeu de démonstration ({total} pièces) ne dépasse pas "
+        f"{PieceListView.paginate_by} : ce test ne prouverait rien"
+    )
+
+    html = client.get(reverse("comptabilite:piece_list")).content.decode()
+    assert 'aria-label="Pagination"' in html
+    assert f"{total} lignes" in html
+
+
+@pytest.mark.django_db
+def test_le_filtre_survit_au_changement_de_page_sur_les_pieces(client_admin):
+    """Le défaut d'origine : `?page=2` effaçait `?statut=…`."""
+    from django.core.management import call_command
+
+    client, _ = client_admin
+    call_command("jeu_demo", "--societe", "PAGE", "--mois", "12")
+
+    html = client.get(reverse("comptabilite:piece_list"), {"statut": "VALIDEE"}).content.decode()
+    assert "statut=VALIDEE" in html, "le filtre disparaît des liens de pagination"

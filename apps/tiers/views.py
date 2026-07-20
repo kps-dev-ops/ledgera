@@ -13,7 +13,10 @@ class TiersListView(LoginRequiredMixin, ListView):
     model = Tiers
     template_name = "tiers/tiers_list.html"
     context_object_name = "tiers_list"
-    paginate_by = 50
+    # 25 lignes : une page de 50 dépasse largement la hauteur d'écran, et il
+    # fallait de toute façon dépasser 50 enregistrements pour qu'une pagination
+    # apparaisse — sur une entité qui démarre, elle ne se voyait jamais.
+    paginate_by = 25
 
     def get_queryset(self):
         qs = super().get_queryset()
