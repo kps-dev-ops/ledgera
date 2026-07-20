@@ -72,4 +72,8 @@
         </div>
     </div>
 </div>
+
+{# La vue pagine (paginate_by = 50) mais aucun contrôle n'était affiché : au-delà de
+   50 tiers, les suivants étaient inatteignables. #}
+{% include "ui/pagination.html" %}
 {% endblock %}

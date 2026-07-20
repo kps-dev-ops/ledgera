@@ -1,0 +1,51 @@
+{% load ui %}
+{% comment %}
+Pagination partagée. Attend `page_obj` (fourni par les vues `paginate_by`).
+
+    {% include "ui/pagination.html" %}
+
+Deux points qui ne sont pas cosmétiques :
+
+• `{% querystring %}` (Django 5.1) reconstruit l'URL en CONSERVANT les paramètres
+  courants et en ne remplaçant que `page`. Écrire `?page=2` en dur effacerait les
+  filtres : passer à la page 2 d'une liste filtrée en affichait le contenu non filtré.
+
+• Les numéros de page sont indispensables sur des listes comptables : « Page 7 / 42 »
+  sans moyen d'atteindre directement une page oblige à cliquer 35 fois.
+
+Ne rien afficher quand il n'y a qu'une seule page : un bandeau de pagination sur une
+liste de trois lignes est du bruit.
+{% endcomment %}
+{% pages_pagination page_obj as pages %}
+{% if pages %}
+<nav class="flex flex-wrap items-center justify-center gap-3 mt-6" aria-label="Pagination">
+    <div class="join">
+        {% if page_obj.has_previous %}
+            <a href="{% querystring page=page_obj.previous_page_number %}"
+               class="join-item btn btn-sm" aria-label="Page précédente"><i data-lucide="chevron-left"></i></a>
+        {% else %}
+            <span class="join-item btn btn-sm btn-disabled" aria-hidden="true"><i data-lucide="chevron-left"></i></span>
+        {% endif %}
+
+        {% for page in pages %}
+            {% if page.ellipse %}
+                <span class="join-item btn btn-sm btn-disabled">…</span>
+            {% elif page.actuelle %}
+                <span class="join-item btn btn-sm btn-active" aria-current="page">{{ page.numero }}</span>
+            {% else %}
+                <a href="{% querystring page=page.numero %}" class="join-item btn btn-sm">{{ page.numero }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="{% querystring page=page_obj.next_page_number %}"
+               class="join-item btn btn-sm" aria-label="Page suivante"><i data-lucide="chevron-right"></i></a>
+        {% else %}
+            <span class="join-item btn btn-sm btn-disabled" aria-hidden="true"><i data-lucide="chevron-right"></i></span>
+        {% endif %}
+    </div>
+    <span class="text-sm opacity-60">
+        {{ page_obj.paginator.count }} ligne{{ page_obj.paginator.count|pluralize }}
+    </span>
+</nav>
+{% endif %}

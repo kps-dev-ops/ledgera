@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Ledgera{% endblock %}</title>
-    {% load static tailwind_tags django_htmx %}
+    {% load static tailwind_tags django_htmx ui %}
     {% tailwind_css %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
@@ -34,35 +34,37 @@
             {% if user.is_authenticated %}
             <div class="flex-none">
                 <ul class="menu menu-horizontal gap-1 text-sm">
-                    <li><a href="{% url 'comptabilite:piece_list' %}" class="font-medium">Pièces</a></li>
+                    <li><a href="{% url 'comptabilite:piece_list' %}" class="font-medium {% actif 'comptabilite:piece_*' %}">Pièces</a></li>
                     <li>
                         <details>
-                            <summary class="font-medium">États</summary>
+                            <summary class="font-medium {% actif 'etats:*' 'comptabilite:cloture*' %}">États</summary>
                             <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
-                                <li><a href="{% url 'etats:balance' %}"><i data-lucide="bar-chart-3"></i> Balance générale</a></li>
-                                <li><a href="{% url 'etats:balance_auxiliaire' %}"><i data-lucide="receipt"></i> Balance auxiliaire</a></li>
-                                <li><a href="{% url 'etats:grand_livre' %}"><i data-lucide="book-open"></i> Grand livre</a></li>
-                                <li><a href="{% url 'etats:journal' %}"><i data-lucide="calendar-days"></i> Journal</a></li>
-                                <li><a href="{% url 'etats:bilan' %}"><i data-lucide="scale"></i> Bilan SYSCOHADA</a></li>
-                                <li><a href="{% url 'etats:compte_resultat' %}"><i data-lucide="trending-up"></i> Compte de résultat</a></li>
-                                {% if "cloturer_exercice" in request.permissions %}<li><a href="{% url 'comptabilite:cloture_liste' %}"><i data-lucide="lock"></i> Clôture d'exercice</a></li>{% endif %}
+                                <li><a href="{% url 'etats:balance' %}" class="{% actif 'etats:balance' %}"><i data-lucide="bar-chart-3"></i> Balance générale</a></li>
+                                <li><a href="{% url 'etats:balance_auxiliaire' %}" class="{% actif 'etats:balance_auxiliaire' %}"><i data-lucide="receipt"></i> Balance auxiliaire</a></li>
+                                <li><a href="{% url 'etats:grand_livre' %}" class="{% actif 'etats:grand_livre' 'etats:grand_livre_compte' %}"><i data-lucide="book-open"></i> Grand livre</a></li>
+                                <li><a href="{% url 'etats:journal' %}" class="{% actif 'etats:journal' %}"><i data-lucide="calendar-days"></i> Journal</a></li>
+                                <li><a href="{% url 'etats:bilan' %}" class="{% actif 'etats:bilan' %}"><i data-lucide="scale"></i> Bilan SYSCOHADA</a></li>
+                                <li><a href="{% url 'etats:compte_resultat' %}" class="{% actif 'etats:compte_resultat' %}"><i data-lucide="trending-up"></i> Compte de résultat</a></li>
+                                {% if "cloturer_exercice" in request.permissions %}<li><a href="{% url 'comptabilite:cloture_liste' %}" class="{% actif 'comptabilite:cloture*' %}"><i data-lucide="lock"></i> Clôture d'exercice</a></li>{% endif %}
                             </ul>
                         </details>
                     </li>
-                    <li><a href="{% url 'tiers:tiers_list' %}" class="font-medium">Tiers</a></li>
-                    <li><a href="{% url 'immobilisations:immo_list' %}" class="font-medium">Immobilisations</a></li>
-                    <li><a href="{% url 'banque:compte_list' %}" class="font-medium">Banque</a></li>
-                    <li><a href="{% url 'fiscal:declaration_list' %}" class="font-medium">TVA</a></li>
-                    <li><a href="{% url 'fiscal:is_list' %}" class="font-medium">IS</a></li>
-                    <li><a href="{% url 'fiscal:aib_list' %}" class="font-medium">AIB</a></li>
+                    {# Le lettrage et le grand livre auxiliaire vivent dans l'espace de noms `comptabilite`
+                       mais relèvent des tiers pour l'utilisateur : ils allument cette entrée. #}
+                    <li><a href="{% url 'tiers:tiers_list' %}" class="font-medium {% actif 'tiers:*' 'comptabilite:grand_livre_tiers' 'comptabilite:lettrer' 'comptabilite:delettrer' %}">Tiers</a></li>
+                    <li><a href="{% url 'immobilisations:immo_list' %}" class="font-medium {% actif 'immobilisations:*' %}">Immobilisations</a></li>
+                    <li><a href="{% url 'banque:compte_list' %}" class="font-medium {% actif 'banque:*' %}">Banque</a></li>
+                    <li><a href="{% url 'fiscal:declaration_list' %}" class="font-medium {% actif 'fiscal:declaration_list' 'fiscal:liquider' 'fiscal:bordereau' %}">TVA</a></li>
+                    <li><a href="{% url 'fiscal:is_list' %}" class="font-medium {% actif 'fiscal:is_*' %}">IS</a></li>
+                    <li><a href="{% url 'fiscal:aib_list' %}" class="font-medium {% actif 'fiscal:aib_*' %}">AIB</a></li>
                     <li>
                         <details>
-                            <summary class="font-medium">Imports / Exports</summary>
+                            <summary class="font-medium {% actif 'imports_exports:*' %}">Imports / Exports</summary>
                             <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
                                 {# Importer = envoyer vers l'application, exporter = récupérer.
                                    Les deux icônes étaient interverties. #}
-                                <li><a href="{% url 'imports_exports:import_list' %}"><i data-lucide="upload"></i> Imports Excel</a></li>
-                                <li><a href="{% url 'imports_exports:export_list' %}"><i data-lucide="download"></i> Exports (FEC/Excel/PDF)</a></li>
+                                <li><a href="{% url 'imports_exports:import_list' %}" class="{% actif 'imports_exports:import_*' %}"><i data-lucide="upload"></i> Imports Excel</a></li>
+                                <li><a href="{% url 'imports_exports:export_list' %}" class="{% actif 'imports_exports:export_*' %}"><i data-lucide="download"></i> Exports (FEC/Excel/PDF)</a></li>
                             </ul>
                         </details>
                     </li>

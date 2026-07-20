@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /*
+     * Menu dépliant marqué comme actif.
+     *
+     * daisyUI n'habille pas `summary.active` : sa règle de menu exclut explicitement
+     * les `details` —
+     *   .menu li > :not(ul, .menu-title, details, .btn).active
+     * — et ne couvre par ailleurs que `summary:active`, la pseudo-classe du clic.
+     * Poser la classe `active` sur un <summary> n'aurait donc AUCUN effet visuel :
+     * l'entrée « États » ou « Imports / Exports » resterait éteinte sur ses propres
+     * écrans, alors que toutes les entrées de premier niveau s'allument.
+     *
+     * On reprend les mêmes variables de thème que daisyUI pour les items actifs
+     * (neutral / neutral-content), afin que les deux cas soient indiscernables.
+     */
+    .menu li > details > summary.active {
+        @apply bg-neutral text-neutral-content;
+    }
+}
