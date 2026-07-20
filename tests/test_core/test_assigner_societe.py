@@ -1,6 +1,7 @@
 import pytest
-from django.core.management import CommandError, call_command
 from django.contrib.auth import get_user_model
+from django.core.management import CommandError, call_command
+
 from apps.core.models import SocieteMembership
 from apps.core.services import provisionner_societe
 from apps.referentiels.services import charger_plan_depuis_fichier
