@@ -7,7 +7,13 @@ from apps.tenants.models import Domain, Societe
 def provisionner_societe(*, code, schema_name, raison_sociale, pays, devise, referentiel,
                          plan_code, domaine=None, annee_exercice=2026) -> Societe:
     """Crée (idempotent) une société + son domaine et initialise, dans son schema, le
-    plan de comptes, les journaux par défaut et l'exercice courant.
+    plan de comptes, les journaux par défaut, l'exercice courant, les catégories
+    d'immobilisation et les configurations fiscales.
+
+    Tout ce qu'une entité doit avoir pour être utilisable dès sa création est amorcé
+    ici. Les configurations fiscales et les catégories d'immobilisation en étaient
+    absentes : les écrans TVA/IS/AIB et le formulaire d'immobilisation présentaient
+    des listes vides, sans moyen de les remplir depuis l'application.
 
     Le domaine est optionnel et non routant : le routage multi-tenant se fait par
     utilisateur connecté (cf. TenantSessionMiddleware). Il reste requis techniquement
@@ -35,9 +41,14 @@ def provisionner_societe(*, code, schema_name, raison_sociale, pays, devise, ref
         init_journaux_par_defaut,
         init_plan_comptable_pour_societe,
     )
+    from apps.fiscal.amorcage import init_configurations_fiscales
+    from apps.immobilisations.services import init_categories_immo_par_defaut
 
     with tenant_context(societe):
         init_plan_comptable_pour_societe(societe)
+        # Les journaux d'abord : les configurations fiscales s'y rattachent (journal OD).
         init_journaux_par_defaut()
         init_exercice_courant(annee_exercice)
+        init_categories_immo_par_defaut(societe)
+        init_configurations_fiscales(societe)
     return societe

@@ -3,17 +3,41 @@
 {% block title %}Export #{{ job.pk }}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Export #{{ job.pk }} — {{ job.get_type_export_display }}</h1>
+<div class="max-w-5xl mx-auto">
 
-<div id="status-block"
-     hx-get="{% url 'imports_exports:export_status' job.pk %}"
-     hx-trigger="every 2s"
-     hx-swap="outerHTML">
-    {% include "imports_exports/_export_status.html" %}
+    <div class="text-sm breadcrumbs opacity-60 mb-2">
+        <ul>
+            <li><a href="{% url 'imports_exports:export_list' %}">Exports</a></li>
+            <li>#{{ job.pk }}</li>
+        </ul>
+    </div>
+
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+        {% with numero=job.pk|stringformat:"s" %}
+            {% include "ui/entete.html" with icone="file-down" titre="Export #"|add:numero sous_titre=job.get_type_export_display %}
+        {% endwith %}
+        <a href="{% url 'imports_exports:export_list' %}" class="btn btn-ghost btn-sm gap-2">
+            <i data-lucide="arrow-left"></i> Retour
+        </a>
+    </div>
+
+    <div id="status-block"
+         hx-get="{% url 'imports_exports:export_status' job.pk %}"
+         hx-trigger="every 2s"
+         hx-swap="outerHTML">
+        {% include "imports_exports/_export_status.html" %}
+    </div>
+
+    <div class="card bg-base-100 border border-base-300 shadow-sm mt-4">
+        <div class="card-body p-4">
+            <details>
+                <summary class="cursor-pointer text-sm opacity-70 flex items-center gap-2">
+                    <i data-lucide="sliders-horizontal"></i> Paramètres
+                </summary>
+                <pre class="text-xs bg-base-200 p-3 rounded mt-2 overflow-x-auto">{{ job.parametres }}</pre>
+            </details>
+        </div>
+    </div>
+
 </div>
-
-<details class="mt-4">
-    <summary class="cursor-pointer text-sm opacity-70">Paramètres</summary>
-    <pre class="text-xs bg-base-200 p-2 rounded mt-2">{{ job.parametres }}</pre>
-</details>
 {% endblock %}

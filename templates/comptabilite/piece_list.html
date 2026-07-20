@@ -3,43 +3,66 @@
 {% block title %}Pièces comptables — Ledgera{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-semibold">Pièces comptables</h1>
-    <a href="{% url 'comptabilite:piece_create' %}" class="btn btn-primary">+ Nouvelle pièce</a>
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="file-text" titre="Pièces comptables" sous_titre="Brouillard et écritures validées" %}
+    {# La vue exige `saisir_brouillard` : sans cette garde, un lecteur (DAF, auditeur)
+       voit le bouton et se prend un refus au clic. #}
+    {% if "saisir_brouillard" in request.permissions %}
+    <a href="{% url 'comptabilite:piece_create' %}" class="btn btn-primary gap-2 shadow">
+        <i data-lucide="plus"></i> Nouvelle pièce
+    </a>
+    {% endif %}
 </div>
 
-<div class="overflow-x-auto bg-base-100 rounded shadow">
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>Date</th><th>Journal</th><th>N°</th><th>Référence</th>
-                <th>Libellé</th><th class="text-right">Débit</th><th class="text-right">Crédit</th>
-                <th>Statut</th><th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for piece in pieces %}
-            <tr>
-                <td>{{ piece.date_piece|date:"d/m/Y" }}</td>
-                <td><span class="badge badge-ghost">{{ piece.journal.code }}</span></td>
-                <td class="font-mono">{{ piece.numero|default:"—" }}</td>
-                <td>{{ piece.reference }}</td>
-                <td>{{ piece.libelle }}</td>
-                <td class="text-right font-mono tabular-nums">{{ piece.total_debit }}</td>
-                <td class="text-right font-mono tabular-nums">{{ piece.total_credit }}</td>
-                <td>
-                    {% if piece.statut == "BROUILLARD" %}<span class="badge badge-warning badge-sm">Brouillard</span>
-                    {% elif piece.statut == "VALIDEE" %}<span class="badge badge-success badge-sm">Validée</span>
-                    {% else %}<span class="badge badge-neutral badge-sm">{{ piece.get_statut_display }}</span>
-                    {% endif %}
-                </td>
-                <td><a href="{% url 'comptabilite:piece_detail' piece.pk %}" class="link link-primary">voir</a></td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="9" class="text-center py-6 opacity-60">Aucune pièce</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>Date</th><th>Journal</th><th>N°</th><th>Référence</th>
+                        <th>Libellé</th><th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                        <th>Statut</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for piece in pieces %}
+                    <tr class="hover">
+                        <td>{{ piece.date_piece|date:"d/m/Y" }}</td>
+                        <td><span class="badge badge-ghost">{{ piece.journal.code }}</span></td>
+                        <td class="font-mono">{{ piece.numero|default:"—" }}</td>
+                        <td>{{ piece.reference }}</td>
+                        <td>{{ piece.libelle }}</td>
+                        <td class="text-right font-mono tabular-nums">{{ piece.total_debit }}</td>
+                        <td class="text-right font-mono tabular-nums">{{ piece.total_credit }}</td>
+                        <td>
+                            {% if piece.statut == "BROUILLARD" %}<span class="badge badge-warning badge-sm">Brouillard</span>
+                            {% elif piece.statut == "VALIDEE" %}<span class="badge badge-success badge-sm">Validée</span>
+                            {% else %}<span class="badge badge-neutral badge-sm">{{ piece.get_statut_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            <a href="{% url 'comptabilite:piece_detail' piece.pk %}" class="btn btn-ghost btn-xs btn-square">
+                                <i data-lucide="chevron-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                                <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                                    <i data-lucide="file-text"></i>
+                                </div>
+                                <p class="font-medium">Aucune pièce</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 {% if is_paginated %}

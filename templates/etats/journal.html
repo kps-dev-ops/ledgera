@@ -1,54 +1,78 @@
 {% extends "base.html" %}
+{% load ui %}
 
 {% block title %}Journal {{ journal.code|default:"" }} — {{ exercice.code }}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Journal — Exercice {{ exercice.code }}</h1>
+<div class="mb-6">
+    {% include "ui/entete.html" with icone="notebook-pen" titre="Journal" sous_titre="Exercice "|add:exercice.code %}
+</div>
 
-<form method="get" class="flex gap-2 mb-4">
-    <select name="exercice" class="select select-sm select-bordered">
-        {% for ex in exercices %}<option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>{% endfor %}
-    </select>
-    <select name="journal" class="select select-sm select-bordered">
-        <option value="">— Choisir —</option>
-        {% for j in journaux %}<option value="{{ j.code }}" {% if j == journal %}selected{% endif %}>{{ j.code }} — {{ j.libelle }}</option>{% endfor %}
-    </select>
-    <input type="date" name="date_debut" value="{{ request.GET.date_debut }}" class="input input-sm input-bordered">
-    <input type="date" name="date_fin" value="{{ request.GET.date_fin }}" class="input input-sm input-bordered">
-    <button class="btn btn-sm btn-primary">Filtrer</button>
-</form>
+{% filtres %}
+    <label class="form-control">
+        <span class="label-text mb-1">Exercice</span>
+        <select name="exercice" class="select select-sm select-bordered">
+            {% for ex in exercices %}<option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>{% endfor %}
+        </select>
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Journal</span>
+        <select name="journal" class="select select-sm select-bordered">
+            <option value="">— Choisir —</option>
+            {% for j in journaux %}<option value="{{ j.code }}" {% if j == journal %}selected{% endif %}>{{ j.code }} — {{ j.libelle }}</option>{% endfor %}
+        </select>
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Du</span>
+        <input type="date" name="date_debut" value="{{ request.GET.date_debut }}" class="input input-sm input-bordered">
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Au</span>
+        <input type="date" name="date_fin" value="{{ request.GET.date_fin }}" class="input input-sm input-bordered">
+    </label>
+    <button class="btn btn-sm btn-primary gap-2"><i data-lucide="filter"></i> Filtrer</button>
+{% endfiltres %}
 
 {% if journal %}
-<div class="bg-base-100 rounded shadow p-4">
-    {% for piece in pieces %}
-    <details class="border-b border-base-300 py-2" {% if forloop.first %}open{% endif %}>
-        <summary class="cursor-pointer flex justify-between">
-            <span>
-                <span class="font-mono">{{ piece.journal.code }}#{{ piece.numero }}</span>
-                <span class="opacity-60">{{ piece.date_piece|date:"d/m/Y" }}</span>
-                — {{ piece.libelle }}
-            </span>
-            <span class="font-mono tabular-nums">{{ piece.total_debit }} / {{ piece.total_credit }}</span>
-        </summary>
-        <table class="table table-xs mt-2">
-            <thead><tr><th>Compte</th><th>Tiers</th><th>Libellé</th>
-                <th class="text-right">Débit</th><th class="text-right">Crédit</th></tr></thead>
-            <tbody>
-                {% for l in piece.lignes.all %}
-                <tr>
-                    <td class="font-mono">{{ l.compte.numero }}</td>
-                    <td>{% if l.tiers %}{{ l.tiers.code_auxiliaire }}{% endif %}</td>
-                    <td>{{ l.libelle }}</td>
-                    <td class="text-right font-mono tabular-nums">{% if l.debit %}{{ l.debit }}{% endif %}</td>
-                    <td class="text-right font-mono tabular-nums">{% if l.credit %}{{ l.credit }}{% endif %}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </details>
-    {% empty %}
-    <p class="text-center py-6 opacity-60">Aucune pièce sur la période</p>
-    {% endfor %}
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-4">
+        {% for piece in pieces %}
+        <details class="border-b border-base-300 py-2" {% if forloop.first %}open{% endif %}>
+            <summary class="cursor-pointer flex justify-between">
+                <span>
+                    <span class="font-mono">{{ piece.journal.code }}#{{ piece.numero }}</span>
+                    <span class="opacity-60">{{ piece.date_piece|date:"d/m/Y" }}</span>
+                    — {{ piece.libelle }}
+                </span>
+                <span class="font-mono tabular-nums">{{ piece.total_debit }} / {{ piece.total_credit }}</span>
+            </summary>
+            <div class="overflow-x-auto">
+                <table class="table table-xs mt-2">
+                    <thead><tr><th>Compte</th><th>Tiers</th><th>Libellé</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th></tr></thead>
+                    <tbody>
+                        {% for l in piece.lignes.all %}
+                        <tr>
+                            <td class="font-mono">{{ l.compte.numero }}</td>
+                            <td>{% if l.tiers %}{{ l.tiers.code_auxiliaire }}{% endif %}</td>
+                            <td>{{ l.libelle }}</td>
+                            <td class="text-right font-mono tabular-nums">{% if l.debit %}{{ l.debit }}{% endif %}</td>
+                            <td class="text-right font-mono tabular-nums">{% if l.credit %}{{ l.credit }}{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        {% empty %}
+        <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                <i data-lucide="notebook-pen"></i>
+            </div>
+            <p class="font-medium">Aucune pièce sur la période</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
 {% else %}
 <p class="opacity-60">Sélectionner un journal pour afficher les pièces.</p>

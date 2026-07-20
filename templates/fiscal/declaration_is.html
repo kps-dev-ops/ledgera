@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% block title %}IS — Ledgera{% endblock %}
 {% block content %}
 <div class="max-w-3xl mx-auto">
@@ -31,7 +30,7 @@
         </tbody>
       </table>
       {% if declaration.statut != "VALIDEE" %}
-      <form method="post" class="flex flex-wrap items-end gap-2 mt-2">{% csrf_token %}{{ retraitement_form|crispy }}
+      <form method="post" class="flex flex-wrap items-end gap-2 mt-2">{% csrf_token %}{% include "ui/formulaire.html" with form=retraitement_form en_ligne=True %}
         <button class="btn btn-ghost btn-sm gap-1"><i data-lucide="plus"></i> Ajouter</button>
       </form>
       {% endif %}
@@ -43,7 +42,7 @@
     </div>
   {% else %}
     <div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
-      <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+      <form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{% include "ui/formulaire.html" with en_ligne=True %}
         <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Créer la déclaration</button>
       </form>
     </div></div>

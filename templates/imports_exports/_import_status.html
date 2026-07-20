@@ -2,7 +2,7 @@
      hx-get="{% url 'imports_exports:import_status' job.pk %}"
      hx-trigger="every 2s"
      hx-swap="outerHTML"{% endif %}>
-    <div class="card bg-base-100 shadow mb-4">
+    <div class="card bg-base-100 border border-base-300 shadow-sm mb-4">
         <div class="card-body">
             <div class="flex justify-between items-center">
                 <div>
@@ -20,10 +20,10 @@
     </div>
 
     {% if job.rapport.erreurs %}
-    <div class="card bg-base-100 shadow border-error border">
+    <div class="card bg-base-100 shadow-sm border-error border">
         <div class="card-body">
             <h2 class="card-title text-lg text-error">Rapport d'erreurs ({{ job.rapport.erreurs|length }})</h2>
-            <table class="table table-sm">
+            <table class="table table-zebra table-sm">
                 <thead><tr><th>Ligne</th><th>Motif</th></tr></thead>
                 <tbody>
                     {% for e in job.rapport.erreurs %}

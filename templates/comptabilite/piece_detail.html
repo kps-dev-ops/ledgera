@@ -3,29 +3,34 @@
 {% block title %}Pièce {{ piece.journal.code }} #{{ piece.numero|default:"—" }} — Ledgera{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-start mb-4">
-    <div>
-        <h1 class="text-2xl font-semibold">
-            {{ piece.journal.code }} #{{ piece.numero|default:"(brouillard)" }}
-        </h1>
-        <p class="opacity-70">{{ piece.libelle }} — {{ piece.date_piece|date:"d/m/Y" }}</p>
-    </div>
-    <div class="flex gap-2">
+{% with numero_affiche=piece.numero|default:"(brouillard)"|stringformat:"s" date_affichee=piece.date_piece|date:"d/m/Y" %}
+{% with titre_piece=piece.journal.code|add:" #"|add:numero_affiche sous_titre_piece=piece.libelle|add:" — "|add:date_affichee %}
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="file-pen" titre=titre_piece sous_titre=sous_titre_piece %}
+    <div class="flex flex-wrap items-center gap-2">
         {% if piece.statut == "BROUILLARD" %}
-            <a href="{% url 'comptabilite:piece_update' piece.pk %}" class="btn btn-sm btn-ghost">Éditer</a>
+            <a href="{% url 'comptabilite:piece_update' piece.pk %}" class="btn btn-sm btn-ghost gap-2">
+                <i data-lucide="pencil"></i> Éditer
+            </a>
             <form method="post" action="{% url 'comptabilite:piece_valider' piece.pk %}"
                   onsubmit="return confirm('Valider cette pièce ? Action irréversible (R3).');">
                 {% csrf_token %}
-                <button class="btn btn-sm btn-success">Valider</button>
+                <button class="btn btn-sm btn-success gap-2">
+                    <i data-lucide="check"></i> Valider
+                </button>
             </form>
             <form method="post" action="{% url 'comptabilite:piece_supprimer' piece.pk %}"
                   onsubmit="return confirm('Supprimer ce brouillard ?');">
                 {% csrf_token %}
-                <button class="btn btn-sm btn-error btn-outline">Supprimer</button>
+                <button class="btn btn-sm btn-error btn-outline gap-2">
+                    <i data-lucide="trash-2"></i> Supprimer
+                </button>
             </form>
         {% endif %}
     </div>
 </div>
+{% endwith %}
+{% endwith %}
 
 {% if messages %}
 <div class="space-y-2 mb-4">
@@ -35,53 +40,68 @@
 </div>
 {% endif %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-    <div class="stat bg-base-100 rounded shadow">
-        <div class="stat-title">Statut</div>
-        <div class="stat-value text-base">
-            {% if piece.statut == "BROUILLARD" %}<span class="badge badge-warning">Brouillard</span>
-            {% elif piece.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>
-            {% else %}<span class="badge badge-neutral">{{ piece.get_statut_display }}</span>{% endif %}
-        </div>
-        <div class="stat-desc">
-            {% if piece.validee_par %}validée par {{ piece.validee_par.email }} le {{ piece.date_validation|date:"d/m/Y H:i" }}{% endif %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+                <i data-lucide="flag"></i> Statut
+            </div>
+            <div class="mt-1">
+                {% if piece.statut == "BROUILLARD" %}<span class="badge badge-warning">Brouillard</span>
+                {% elif piece.statut == "VALIDEE" %}<span class="badge badge-success">Validée</span>
+                {% else %}<span class="badge badge-neutral">{{ piece.get_statut_display }}</span>{% endif %}
+            </div>
+            <div class="text-xs opacity-50">
+                {% if piece.validee_par %}validée par {{ piece.validee_par.email }} le {{ piece.date_validation|date:"d/m/Y H:i" }}{% endif %}
+            </div>
         </div>
     </div>
-    <div class="stat bg-base-100 rounded shadow">
-        <div class="stat-title">Total débit / crédit</div>
-        <div class="stat-value text-base font-mono tabular-nums">
-            {{ piece.total_debit }} / {{ piece.total_credit }}
-        </div>
-        <div class="stat-desc">
-            {% if piece.total_debit == piece.total_credit %}
-                <span class="text-success">Équilibrée</span>
-            {% else %}<span class="text-error">Déséquilibrée</span>{% endif %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-4">
+            <div class="flex items-center gap-2 text-xs uppercase tracking-wide opacity-60">
+                <i data-lucide="scale"></i> Total débit / crédit
+            </div>
+            <div class="text-2xl font-bold font-mono tabular-nums mt-1">
+                {{ piece.total_debit }} / {{ piece.total_credit }}
+            </div>
+            <div class="text-xs opacity-50">
+                {% if piece.total_debit == piece.total_credit %}
+                    <span class="text-success">Équilibrée</span>
+                {% else %}<span class="text-error">Déséquilibrée</span>{% endif %}
+            </div>
         </div>
     </div>
 </div>
 
-<div class="card bg-base-100 shadow">
-    <div class="card-body">
-        <h2 class="card-title text-lg">Lignes</h2>
-        <table class="table table-sm">
-            <thead>
-                <tr><th>#</th><th>Compte</th><th>Tiers</th><th>Libellé</th>
-                    <th class="text-right">Débit</th><th class="text-right">Crédit</th><th>Lettre</th></tr>
-            </thead>
-            <tbody>
-                {% for ligne in lignes %}
-                <tr>
-                    <td>{{ ligne.numero_ligne }}</td>
-                    <td class="font-mono">{{ ligne.compte.numero }} <span class="opacity-60">{{ ligne.compte.libelle }}</span></td>
-                    <td>{% if ligne.tiers %}{{ ligne.tiers.code_auxiliaire }} {{ ligne.tiers.raison_sociale }}{% endif %}</td>
-                    <td>{{ ligne.libelle }}</td>
-                    <td class="text-right font-mono tabular-nums">{% if ligne.debit %}{{ ligne.debit }}{% endif %}</td>
-                    <td class="text-right font-mono tabular-nums">{% if ligne.credit %}{{ ligne.credit }}{% endif %}</td>
-                    <td>{{ ligne.lettre_lettrage }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="flex items-center gap-2 p-4 border-b border-base-200">
+            <i data-lucide="table-2" class="opacity-60"></i>
+            <h2 class="font-semibold">Lignes</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>#</th><th>Compte</th><th>Tiers</th><th>Libellé</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th><th>Lettre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ligne in lignes %}
+                    <tr>
+                        <td>{{ ligne.numero_ligne }}</td>
+                        <td class="font-mono">{{ ligne.compte.numero }} <span class="opacity-60">{{ ligne.compte.libelle }}</span></td>
+                        <td>{% if ligne.tiers %}{{ ligne.tiers.code_auxiliaire }} {{ ligne.tiers.raison_sociale }}{% endif %}</td>
+                        <td>{{ ligne.libelle }}</td>
+                        <td class="text-right font-mono tabular-nums">{% if ligne.debit %}{{ ligne.debit }}{% endif %}</td>
+                        <td class="text-right font-mono tabular-nums">{% if ligne.credit %}{{ ligne.credit }}{% endif %}</td>
+                        <td>{{ ligne.lettre_lettrage }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -1,41 +1,75 @@
 {% extends "base.html" %}
+{% load ui %}
 
 {% block title %}Tiers — Ledgera{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-semibold">Tiers</h1>
-    <a href="{% url 'tiers:tiers_create' %}" class="btn btn-primary">+ Nouveau tiers</a>
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="users" titre="Tiers" sous_titre="Clients, fournisseurs et comptes auxiliaires divers" %}
+    {# La vue exige `saisir_brouillard` : sans cette garde, un lecteur (DAF, auditeur)
+       voit le bouton et se prend un refus au clic. #}
+    {% if "saisir_brouillard" in request.permissions %}
+    <a href="{% url 'tiers:tiers_create' %}" class="btn btn-primary gap-2 shadow">
+        <i data-lucide="plus"></i> Nouveau tiers
+    </a>
+    {% endif %}
 </div>
 
-<form method="get" class="flex gap-2 mb-4">
-    <select name="type" class="select select-sm select-bordered">
-        <option value="">Tous types</option>
-        <option value="CLIENT" {% if request.GET.type == "CLIENT" %}selected{% endif %}>Clients</option>
-        <option value="FOURNISSEUR" {% if request.GET.type == "FOURNISSEUR" %}selected{% endif %}>Fournisseurs</option>
-        <option value="DIVERS" {% if request.GET.type == "DIVERS" %}selected{% endif %}>Divers</option>
-    </select>
-    <input type="search" name="q" placeholder="Raison sociale…" value="{{ request.GET.q }}" class="input input-sm input-bordered">
-    <button class="btn btn-sm">Filtrer</button>
-</form>
+{% filtres %}
+    <label class="form-control">
+        <span class="label-text mb-1">Type</span>
+        <select name="type" class="select select-sm select-bordered">
+            <option value="">Tous types</option>
+            <option value="CLIENT" {% if request.GET.type == "CLIENT" %}selected{% endif %}>Clients</option>
+            <option value="FOURNISSEUR" {% if request.GET.type == "FOURNISSEUR" %}selected{% endif %}>Fournisseurs</option>
+            <option value="DIVERS" {% if request.GET.type == "DIVERS" %}selected{% endif %}>Divers</option>
+        </select>
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Raison sociale</span>
+        <input type="search" name="q" placeholder="Raison sociale…" value="{{ request.GET.q }}" class="input input-sm input-bordered">
+    </label>
+    <button class="btn btn-sm btn-primary gap-2"><i data-lucide="filter"></i> Filtrer</button>
+{% endfiltres %}
 
-<div class="overflow-x-auto bg-base-100 rounded shadow">
-    <table class="table table-sm">
-        <thead><tr><th>Code</th><th>Raison sociale</th><th>Type</th><th>Compte collectif</th><th>Actif</th><th></th></tr></thead>
-        <tbody>
-            {% for t in tiers_list %}
-            <tr>
-                <td class="font-mono">{{ t.code_auxiliaire }}</td>
-                <td>{{ t.raison_sociale }}</td>
-                <td>{{ t.get_type_tiers_display }}</td>
-                <td class="font-mono text-xs">{{ t.compte_collectif.numero }}</td>
-                <td>{% if t.actif %}<span class="badge badge-success badge-xs">oui</span>{% else %}<span class="badge badge-ghost badge-xs">non</span>{% endif %}</td>
-                <td><a href="{% url 'tiers:tiers_detail' t.pk %}" class="link link-primary">voir</a></td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="6" class="text-center py-6 opacity-60">Aucun tiers</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>Code</th><th>Raison sociale</th><th>Type</th><th>Compte collectif</th><th>Actif</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tiers_list %}
+                    <tr class="hover">
+                        <td class="font-mono">{{ t.code_auxiliaire }}</td>
+                        <td>{{ t.raison_sociale }}</td>
+                        <td>{{ t.get_type_tiers_display }}</td>
+                        <td class="font-mono text-xs">{{ t.compte_collectif.numero }}</td>
+                        <td>{% if t.actif %}<span class="badge badge-success badge-xs">oui</span>{% else %}<span class="badge badge-ghost badge-xs">non</span>{% endif %}</td>
+                        <td class="text-right">
+                            <a href="{% url 'tiers:tiers_detail' t.pk %}" class="btn btn-ghost btn-xs btn-square">
+                                <i data-lucide="chevron-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                                <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                                    <i data-lucide="users"></i>
+                                </div>
+                                <p class="font-medium">Aucun tiers</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

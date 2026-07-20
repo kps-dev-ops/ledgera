@@ -6,58 +6,680 @@
     "version": "2017"
   },
   "comptes": [
-    {"numero": "1", "libelle": "Comptes de ressources durables", "classe": 1, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": null},
-    {"numero": "10", "libelle": "Capital", "classe": 1, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "1"},
-    {"numero": "101", "libelle": "Capital social", "classe": 1, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "10"},
-    {"numero": "1011", "libelle": "Capital souscrit non appelé", "classe": 1, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "101"},
-    {"numero": "1012", "libelle": "Capital souscrit appelé, non versé", "classe": 1, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "101"},
-    {"numero": "1013", "libelle": "Capital souscrit appelé, versé", "classe": 1, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "101"},
-    {"numero": "2", "libelle": "Comptes d'actif immobilisé", "classe": 2, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": null},
-    {"numero": "21", "libelle": "Immobilisations incorporelles", "classe": 2, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "2"},
-    {"numero": "22", "libelle": "Terrains", "classe": 2, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "2"},
-    {"numero": "23", "libelle": "Bâtiments", "classe": 2, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "2"},
-    {"numero": "24", "libelle": "Matériel", "classe": 2, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "2"},
-    {"numero": "28", "libelle": "Amortissements des immobilisations", "classe": 2, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "2"},
-    {"numero": "3", "libelle": "Comptes de stocks", "classe": 3, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": null},
-    {"numero": "31", "libelle": "Marchandises", "classe": 3, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "3"},
-    {"numero": "4", "libelle": "Comptes de tiers", "classe": 4, "sens": "mixte", "collectif_tiers": false, "analytique_ok": false, "parent": null},
-    {"numero": "40", "libelle": "Fournisseurs et comptes rattachés", "classe": 4, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "4"},
-    {"numero": "401", "libelle": "Fournisseurs, dettes en compte", "classe": 4, "sens": "crediteur", "collectif_tiers": true, "analytique_ok": false, "parent": "40"},
-    {"numero": "4011", "libelle": "Fournisseurs — locaux", "classe": 4, "sens": "crediteur", "collectif_tiers": true, "analytique_ok": false, "parent": "401"},
-    {"numero": "4012", "libelle": "Fournisseurs — étrangers", "classe": 4, "sens": "crediteur", "collectif_tiers": true, "analytique_ok": false, "parent": "401"},
-    {"numero": "41", "libelle": "Clients et comptes rattachés", "classe": 4, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "4"},
-    {"numero": "411", "libelle": "Clients", "classe": 4, "sens": "debiteur", "collectif_tiers": true, "analytique_ok": false, "parent": "41"},
-    {"numero": "4111", "libelle": "Clients — ventes locales", "classe": 4, "sens": "debiteur", "collectif_tiers": true, "analytique_ok": false, "parent": "411"},
-    {"numero": "4112", "libelle": "Clients — ventes à l'export", "classe": 4, "sens": "debiteur", "collectif_tiers": true, "analytique_ok": false, "parent": "411"},
-    {"numero": "44", "libelle": "État et collectivités publiques", "classe": 4, "sens": "mixte", "collectif_tiers": false, "analytique_ok": false, "parent": "4"},
-    {"numero": "4431", "libelle": "TVA facturée sur ventes", "classe": 4, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "44"},
-    {"numero": "4452", "libelle": "TVA récupérable sur achats", "classe": 4, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "44"},
-    {"numero": "5", "libelle": "Comptes de trésorerie", "classe": 5, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": null},
-    {"numero": "52", "libelle": "Banques", "classe": 5, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "5"},
-    {"numero": "521", "libelle": "Banques locales", "classe": 5, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "52"},
-    {"numero": "57", "libelle": "Caisses", "classe": 5, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "5"},
-    {"numero": "571", "libelle": "Caisse siège", "classe": 5, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "57"},
-    {"numero": "6", "libelle": "Comptes de charges des activités ordinaires", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": null},
-    {"numero": "60", "libelle": "Achats et variations de stocks", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "601", "libelle": "Achats de marchandises", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "60"},
-    {"numero": "607", "libelle": "Variation des stocks de marchandises", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "60"},
-    {"numero": "61", "libelle": "Transports", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "62", "libelle": "Services extérieurs A", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "63", "libelle": "Services extérieurs B", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "64", "libelle": "Impôts et taxes", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "65", "libelle": "Charges de personnel", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "66", "libelle": "Charges financières", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "67", "libelle": "Charges HAO", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": false, "parent": "6"},
-    {"numero": "681", "libelle": "Dotations aux amortissements", "classe": 6, "sens": "debiteur", "collectif_tiers": false, "analytique_ok": true, "parent": "6"},
-    {"numero": "7", "libelle": "Comptes de produits des activités ordinaires", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": null},
-    {"numero": "70", "libelle": "Ventes", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "7"},
-    {"numero": "701", "libelle": "Ventes de marchandises", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "70"},
-    {"numero": "7011", "libelle": "Ventes de marchandises — locales", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "701"},
-    {"numero": "7012", "libelle": "Ventes de marchandises — export", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "701"},
-    {"numero": "706", "libelle": "Services vendus", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "70"},
-    {"numero": "75", "libelle": "Autres produits", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": true, "parent": "7"},
-    {"numero": "77", "libelle": "Revenus financiers", "classe": 7, "sens": "crediteur", "collectif_tiers": false, "analytique_ok": false, "parent": "7"},
-    {"numero": "8", "libelle": "Comptes des autres charges et des autres produits", "classe": 8, "sens": "mixte", "collectif_tiers": false, "analytique_ok": false, "parent": null},
-    {"numero": "9", "libelle": "Comptes analytiques de gestion", "classe": 9, "sens": "mixte", "collectif_tiers": false, "analytique_ok": true, "parent": null}
+    {
+      "numero": "1",
+      "libelle": "Comptes de ressources durables",
+      "classe": 1,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": null
+    },
+    {
+      "numero": "10",
+      "libelle": "Capital",
+      "classe": 1,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "1"
+    },
+    {
+      "numero": "101",
+      "libelle": "Capital social",
+      "classe": 1,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "10"
+    },
+    {
+      "numero": "1011",
+      "libelle": "Capital souscrit non appelé",
+      "classe": 1,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "101"
+    },
+    {
+      "numero": "1012",
+      "libelle": "Capital souscrit appelé, non versé",
+      "classe": 1,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "101"
+    },
+    {
+      "numero": "1013",
+      "libelle": "Capital souscrit appelé, versé",
+      "classe": 1,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "101"
+    },
+    {
+      "numero": "2",
+      "libelle": "Comptes d'actif immobilisé",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": null
+    },
+    {
+      "numero": "21",
+      "libelle": "Immobilisations incorporelles",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "2"
+    },
+    {
+      "numero": "22",
+      "libelle": "Terrains",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "2"
+    },
+    {
+      "numero": "23",
+      "libelle": "Bâtiments",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "2"
+    },
+    {
+      "numero": "24",
+      "libelle": "Matériel",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "2"
+    },
+    {
+      "numero": "244",
+      "libelle": "Matériel et mobilier",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "24"
+    },
+    {
+      "numero": "2441",
+      "libelle": "Matériel de bureau",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "244"
+    },
+    {
+      "numero": "2442",
+      "libelle": "Matériel informatique",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "244"
+    },
+    {
+      "numero": "2444",
+      "libelle": "Mobilier de bureau",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "244"
+    },
+    {
+      "numero": "245",
+      "libelle": "Matériel de transport",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "24"
+    },
+    {
+      "numero": "2451",
+      "libelle": "Matériel automobile",
+      "classe": 2,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "245"
+    },
+    {
+      "numero": "28",
+      "libelle": "Amortissements des immobilisations",
+      "classe": 2,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "2"
+    },
+    {
+      "numero": "284",
+      "libelle": "Amortissements du matériel",
+      "classe": 2,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "28"
+    },
+    {
+      "numero": "2844",
+      "libelle": "Amortissements du matériel et mobilier",
+      "classe": 2,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "284"
+    },
+    {
+      "numero": "2845",
+      "libelle": "Amortissements du matériel de transport",
+      "classe": 2,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "284"
+    },
+    {
+      "numero": "3",
+      "libelle": "Comptes de stocks",
+      "classe": 3,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": null
+    },
+    {
+      "numero": "31",
+      "libelle": "Marchandises",
+      "classe": 3,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "3"
+    },
+    {
+      "numero": "4",
+      "libelle": "Comptes de tiers",
+      "classe": 4,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": null
+    },
+    {
+      "numero": "40",
+      "libelle": "Fournisseurs et comptes rattachés",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "4"
+    },
+    {
+      "numero": "401",
+      "libelle": "Fournisseurs, dettes en compte",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "40"
+    },
+    {
+      "numero": "4011",
+      "libelle": "Fournisseurs — locaux",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "401"
+    },
+    {
+      "numero": "4012",
+      "libelle": "Fournisseurs — étrangers",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "401"
+    },
+    {
+      "numero": "41",
+      "libelle": "Clients et comptes rattachés",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "4"
+    },
+    {
+      "numero": "411",
+      "libelle": "Clients",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "41"
+    },
+    {
+      "numero": "4111",
+      "libelle": "Clients — ventes locales",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "411"
+    },
+    {
+      "numero": "4112",
+      "libelle": "Clients — ventes à l'export",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": true,
+      "analytique_ok": false,
+      "parent": "411"
+    },
+    {
+      "numero": "44",
+      "libelle": "État et collectivités publiques",
+      "classe": 4,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "4"
+    },
+    {
+      "numero": "441",
+      "libelle": "État, impôt sur les bénéfices",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "443",
+      "libelle": "État, TVA facturée",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "444",
+      "libelle": "État, TVA due ou crédit de TVA",
+      "classe": 4,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "4441",
+      "libelle": "État, TVA due",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "444"
+    },
+    {
+      "numero": "4449",
+      "libelle": "État, crédit de TVA à reporter",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "444"
+    },
+    {
+      "numero": "445",
+      "libelle": "État, TVA récupérable",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "4451",
+      "libelle": "TVA récupérable sur immobilisations",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "445"
+    },
+    {
+      "numero": "447",
+      "libelle": "État, impôts retenus à la source",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "449",
+      "libelle": "État, créances et dettes diverses",
+      "classe": 4,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "44"
+    },
+    {
+      "numero": "4492",
+      "libelle": "État, avances et acomptes versés sur impôts",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "449"
+    },
+    {
+      "numero": "4431",
+      "libelle": "TVA facturée sur ventes",
+      "classe": 4,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "443"
+    },
+    {
+      "numero": "4452",
+      "libelle": "TVA récupérable sur achats",
+      "classe": 4,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "445"
+    },
+    {
+      "numero": "5",
+      "libelle": "Comptes de trésorerie",
+      "classe": 5,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": null
+    },
+    {
+      "numero": "52",
+      "libelle": "Banques",
+      "classe": 5,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "5"
+    },
+    {
+      "numero": "521",
+      "libelle": "Banques locales",
+      "classe": 5,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "52"
+    },
+    {
+      "numero": "57",
+      "libelle": "Caisses",
+      "classe": 5,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "5"
+    },
+    {
+      "numero": "571",
+      "libelle": "Caisse siège",
+      "classe": 5,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "57"
+    },
+    {
+      "numero": "6",
+      "libelle": "Comptes de charges des activités ordinaires",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": null
+    },
+    {
+      "numero": "60",
+      "libelle": "Achats et variations de stocks",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "601",
+      "libelle": "Achats de marchandises",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "60"
+    },
+    {
+      "numero": "607",
+      "libelle": "Variation des stocks de marchandises",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "60"
+    },
+    {
+      "numero": "61",
+      "libelle": "Transports",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "62",
+      "libelle": "Services extérieurs A",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "63",
+      "libelle": "Services extérieurs B",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "64",
+      "libelle": "Impôts et taxes",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "65",
+      "libelle": "Charges de personnel",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "66",
+      "libelle": "Charges financières",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "67",
+      "libelle": "Charges HAO",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "6"
+    },
+    {
+      "numero": "681",
+      "libelle": "Dotations aux amortissements",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "6"
+    },
+    {
+      "numero": "6813",
+      "libelle": "Dotations aux amortissements des immobilisations corporelles",
+      "classe": 6,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "681"
+    },
+    {
+      "numero": "7",
+      "libelle": "Comptes de produits des activités ordinaires",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": null
+    },
+    {
+      "numero": "70",
+      "libelle": "Ventes",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "7"
+    },
+    {
+      "numero": "701",
+      "libelle": "Ventes de marchandises",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "70"
+    },
+    {
+      "numero": "7011",
+      "libelle": "Ventes de marchandises — locales",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "701"
+    },
+    {
+      "numero": "7012",
+      "libelle": "Ventes de marchandises — export",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "701"
+    },
+    {
+      "numero": "706",
+      "libelle": "Services vendus",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "70"
+    },
+    {
+      "numero": "75",
+      "libelle": "Autres produits",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": "7"
+    },
+    {
+      "numero": "77",
+      "libelle": "Revenus financiers",
+      "classe": 7,
+      "sens": "crediteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "7"
+    },
+    {
+      "numero": "8",
+      "libelle": "Comptes des autres charges et des autres produits",
+      "classe": 8,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": null
+    },
+    {
+      "numero": "89",
+      "libelle": "Impôts sur le résultat",
+      "classe": 8,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "8"
+    },
+    {
+      "numero": "891",
+      "libelle": "Impôts sur les bénéfices de l'exercice",
+      "classe": 8,
+      "sens": "debiteur",
+      "collectif_tiers": false,
+      "analytique_ok": false,
+      "parent": "89"
+    },
+    {
+      "numero": "9",
+      "libelle": "Comptes analytiques de gestion",
+      "classe": 9,
+      "sens": "mixte",
+      "collectif_tiers": false,
+      "analytique_ok": true,
+      "parent": null
+    }
   ]
 }

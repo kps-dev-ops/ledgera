@@ -1,0 +1,40 @@
+{% load formulaires %}
+{% comment %}
+Un champ de formulaire habillé en daisyUI.
+
+Attend `field` (BoundField). Option `en_ligne` : les champs se posent côte à côte
+(barres de filtre, formulaires de calcul) au lieu d'être empilés.
+
+Trois branches, parce que la place du libellé dépend du contrôle :
+  • case à cocher unique → libellé À DROITE de la case ;
+  • groupe de radios/cases → libellé au-dessus, et surtout PAS de <label> englobant
+    (il ferait basculer la première option à chaque clic sur le titre du groupe) ;
+  • tout le reste → libellé au-dessus, dans un <label> englobant.
+{% endcomment %}
+{% with largeur=en_ligne|yesno:",w-full" bloc=en_ligne|yesno:"mb-0,w-full mb-3" %}
+
+{% if field|est_case_a_cocher %}
+    <div class="form-control {{ bloc }}">
+        <label class="label cursor-pointer justify-start gap-3 py-1">
+            {{ field|widget_daisy:largeur }}
+            <span class="label-text">{{ field.label }}</span>
+        </label>
+        {% include "ui/_champ_notes.html" %}
+    </div>
+
+{% elif field|est_liste_de_choix %}
+    <div class="form-control {{ bloc }}">
+        <span class="label-text mb-1 block">{{ field.label }}{% if field.field.required %}<span class="text-error"> *</span>{% endif %}</span>
+        <div class="flex flex-col gap-1">{{ field|widget_daisy:largeur }}</div>
+        {% include "ui/_champ_notes.html" %}
+    </div>
+
+{% else %}
+    <label class="form-control {{ bloc }}">
+        <span class="label-text mb-1">{{ field.label }}{% if field.field.required %}<span class="text-error"> *</span>{% endif %}</span>
+        {{ field|widget_daisy:largeur }}
+        {% include "ui/_champ_notes.html" %}
+    </label>
+{% endif %}
+
+{% endwith %}

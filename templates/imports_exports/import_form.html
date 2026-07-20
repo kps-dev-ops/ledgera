@@ -3,27 +3,41 @@
 {% block title %}Importer un fichier Excel{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">Importer un fichier Excel</h1>
+<div class="max-w-3xl mx-auto">
 
-<div class="alert mb-4">
-    <span>Format attendu : colonnes <strong>Date | Référence | Libellé | Compte | Débit | Crédit | Tiers</strong>.
-        Toutes les lignes ayant la même <code>Référence</code> deviennent une seule pièce (qui doit être équilibrée).</span>
+    <div class="text-sm breadcrumbs opacity-60 mb-2">
+        <ul>
+            <li><a href="{% url 'imports_exports:import_list' %}">Imports</a></li>
+            <li>Nouvel import</li>
+        </ul>
+    </div>
+
+    <div class="mb-6">
+        {% include "ui/entete.html" with icone="file-up" titre="Importer un fichier Excel" sous_titre="Les lignes sont regroupées en pièces par référence." %}
+    </div>
+
+    <div class="alert mb-4">
+        <i data-lucide="info"></i>
+        <span>Format attendu : colonnes <strong>Date | Référence | Libellé | Compte | Débit | Crédit | Tiers</strong>.
+            Toutes les lignes ayant la même <code>Référence</code> deviennent une seule pièce (qui doit être équilibrée).</span>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="card bg-base-100 border border-base-300 shadow-sm">
+            <div class="card-body p-6">
+                {% include "ui/formulaire.html" %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 mt-4">
+            <a href="{% url 'imports_exports:import_list' %}" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary gap-2 shadow">
+                <i data-lucide="upload"></i> Lancer l'import
+            </button>
+        </div>
+    </form>
+
 </div>
-
-<form method="post" enctype="multipart/form-data" class="card bg-base-100 shadow">
-    {% csrf_token %}
-    <div class="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
-        {% for field in form %}
-        <label class="form-control w-full">
-            <span class="label-text">{{ field.label }}</span>
-            {{ field }}
-            {% if field.errors %}<span class="text-error text-xs">{{ field.errors|join:", " }}</span>{% endif %}
-        </label>
-        {% endfor %}
-    </div>
-    <div class="card-actions justify-end p-4">
-        <a href="{% url 'imports_exports:import_list' %}" class="btn btn-ghost">Annuler</a>
-        <button class="btn btn-primary">Lancer l'import</button>
-    </div>
-</form>
 {% endblock %}

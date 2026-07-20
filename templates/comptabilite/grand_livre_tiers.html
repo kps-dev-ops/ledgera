@@ -3,72 +3,96 @@
 {% block title %}Grand livre {{ tiers.code_auxiliaire }}{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">
-    Grand livre — {{ tiers.code_auxiliaire }} {{ tiers.raison_sociale }}
-</h1>
+{% with sous_titre_tiers=tiers.code_auxiliaire|add:" — "|add:tiers.raison_sociale %}
+<div class="mb-6">
+    {% include "ui/entete.html" with icone="book-user" titre="Grand livre" sous_titre=sous_titre_tiers %}
+</div>
+{% endwith %}
 
-<form method="post" action="{% url 'comptabilite:lettrer' %}" class="card bg-base-100 shadow mb-4">
+<form method="post" action="{% url 'comptabilite:lettrer' %}"
+      class="card bg-base-100 border border-base-300 shadow-sm mb-6">
     {% csrf_token %}
-    <div class="card-body">
-        <div class="flex justify-between items-center mb-2">
-            <h2 class="card-title text-lg">Lignes non lettrées</h2>
-            <button type="submit" class="btn btn-sm btn-primary">Lettrer la sélection</button>
+    <div class="card-body p-0">
+        <div class="flex flex-wrap justify-between items-center gap-3 p-4 border-b border-base-200">
+            <h2 class="font-semibold flex items-center gap-2">
+                <i data-lucide="unlink" class="opacity-60"></i> Lignes non lettrées
+            </h2>
+            <button type="submit" class="btn btn-sm btn-primary gap-2">
+                <i data-lucide="link"></i> Lettrer la sélection
+            </button>
         </div>
-        <table class="table table-sm">
-            <thead><tr><th></th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
-                <th class="text-right">Débit</th><th class="text-right">Crédit</th></tr></thead>
-            <tbody>
-                {% for l in non_lettrees %}
-                <tr>
-                    <td><input type="checkbox" name="ligne_ids" value="{{ l.pk }}" class="checkbox checkbox-sm"></td>
-                    <td>{{ l.piece.date_piece|date:"d/m/Y" }}</td>
-                    <td><span class="font-mono">{{ l.piece.journal.code }}#{{ l.piece.numero }}</span></td>
-                    <td class="font-mono text-xs">{{ l.compte.numero }}</td>
-                    <td>{{ l.libelle|default:l.piece.libelle }}</td>
-                    <td class="text-right font-mono tabular-nums">{% if l.debit %}{{ l.debit }}{% endif %}</td>
-                    <td class="text-right font-mono tabular-nums">{% if l.credit %}{{ l.credit }}{% endif %}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="7" class="text-center py-4 opacity-60">Tout est lettré ✓</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</form>
-
-<div class="card bg-base-100 shadow">
-    <div class="card-body">
-        <h2 class="card-title text-lg">Lignes lettrées</h2>
-        <table class="table table-sm">
-            <thead><tr><th>Lettre</th><th>Date</th><th>Pièce</th><th>Libellé</th>
-                <th class="text-right">Débit</th><th class="text-right">Crédit</th><th></th></tr></thead>
-            <tbody>
-                {% regroup lettrees by lettre_lettrage as groupes %}
-                {% for groupe in groupes %}
-                    {% for l in groupe.list %}
-                    <tr>
-                        <td><span class="badge badge-info">{{ l.lettre_lettrage }}</span></td>
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th></th><th>Date</th><th>Pièce</th><th>Compte</th><th>Libellé</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in non_lettrees %}
+                    <tr class="hover">
+                        <td><input type="checkbox" name="ligne_ids" value="{{ l.pk }}" class="checkbox checkbox-sm"></td>
                         <td>{{ l.piece.date_piece|date:"d/m/Y" }}</td>
                         <td><span class="font-mono">{{ l.piece.journal.code }}#{{ l.piece.numero }}</span></td>
+                        <td class="font-mono text-xs">{{ l.compte.numero }}</td>
                         <td>{{ l.libelle|default:l.piece.libelle }}</td>
                         <td class="text-right font-mono tabular-nums">{% if l.debit %}{{ l.debit }}{% endif %}</td>
                         <td class="text-right font-mono tabular-nums">{% if l.credit %}{{ l.credit }}{% endif %}</td>
-                        <td>
-                            {% if forloop.first %}
-                            <form method="post" action="{% url 'comptabilite:delettrer' tiers.pk groupe.grouper %}"
-                                  onsubmit="return confirm('Délettrer ?');">
-                                {% csrf_token %}
-                                <button class="btn btn-xs btn-ghost btn-error">Délettrer</button>
-                            </form>
-                            {% endif %}
-                        </td>
                     </tr>
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-8 opacity-60">Tout est lettré ✓</td></tr>
                     {% endfor %}
-                {% empty %}
-                <tr><td colspan="7" class="text-center py-4 opacity-60">Aucune ligne lettrée</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</form>
+
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="flex items-center gap-2 p-4 border-b border-base-200">
+            <i data-lucide="link" class="opacity-60"></i>
+            <h2 class="font-semibold">Lignes lettrées</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>Lettre</th><th>Date</th><th>Pièce</th><th>Libellé</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th><th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup lettrees by lettre_lettrage as groupes %}
+                    {% for groupe in groupes %}
+                        {% for l in groupe.list %}
+                        <tr class="hover">
+                            <td><span class="badge badge-info">{{ l.lettre_lettrage }}</span></td>
+                            <td>{{ l.piece.date_piece|date:"d/m/Y" }}</td>
+                            <td><span class="font-mono">{{ l.piece.journal.code }}#{{ l.piece.numero }}</span></td>
+                            <td>{{ l.libelle|default:l.piece.libelle }}</td>
+                            <td class="text-right font-mono tabular-nums">{% if l.debit %}{{ l.debit }}{% endif %}</td>
+                            <td class="text-right font-mono tabular-nums">{% if l.credit %}{{ l.credit }}{% endif %}</td>
+                            <td class="text-right">
+                                {% if forloop.first %}
+                                <form method="post" action="{% url 'comptabilite:delettrer' tiers.pk groupe.grouper %}"
+                                      onsubmit="return confirm('Délettrer ?');">
+                                    {% csrf_token %}
+                                    <button class="btn btn-xs btn-ghost btn-error gap-1">
+                                        <i data-lucide="unlink"></i> Délettrer
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% empty %}
+                    <tr><td colspan="7" class="text-center py-8 opacity-60">Aucune ligne lettrée</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

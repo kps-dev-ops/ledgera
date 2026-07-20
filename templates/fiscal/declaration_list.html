@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% block title %}TVA — Ledgera{% endblock %}
 {% block content %}
 <div class="flex items-center gap-3 mb-6">
@@ -9,7 +8,7 @@
 </div>
 
 <div class="card bg-base-100 border border-base-300 shadow-sm mb-6"><div class="card-body">
-  {% if "editer_declarations" in request.permissions %}<form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{{ form|crispy }}
+  {% if "editer_declarations" in request.permissions %}<form method="post" class="flex flex-wrap items-end gap-3">{% csrf_token %}{% include "ui/formulaire.html" with en_ligne=True %}
     <button type="submit" class="btn btn-primary gap-2"><i data-lucide="calculator"></i> Calculer</button>
   </form>{% endif %}
   {% if declaration %}

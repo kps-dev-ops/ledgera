@@ -1,8 +1,15 @@
 module.exports = {
+    // Tailwind purge toute classe qu'il ne trouve pas ici. Une classe déclarée dans une
+    // source non listée disparaît silencieusement du CSS : le contrôle s'affiche sans
+    // style, sans la moindre erreur. Toute source qui écrit une classe doit donc figurer
+    // dans cette liste — y compris le code Python (apps/core/templatetags/formulaires.py
+    // choisit la classe daisyUI selon la famille de widget).
+    // L'étape Node du Dockerfile copie exactement `theme`, `templates` et `apps`.
     content: [
         '../templates/**/*.html',
         '../../templates/**/*.html',
         '../../**/templates/**/*.html',
+        '../../apps/**/*.py',
     ],
     theme: {
         extend: {

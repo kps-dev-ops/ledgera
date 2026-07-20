@@ -1,93 +1,120 @@
 {% extends "base.html" %}
+{% load ui %}
 
 {% block title %}Balance générale — {{ exercice.code }}{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-start mb-4">
-    <div>
-        <h1 class="text-2xl font-semibold">Balance générale</h1>
-        <p class="opacity-70">Exercice {{ exercice.code }} ({{ exercice.date_debut|date:"d/m/Y" }} → {{ exercice.date_fin|date:"d/m/Y" }})</p>
-    </div>
-    <div class="flex gap-2">
+{% with debut=exercice.date_debut|date:"d/m/Y" fin=exercice.date_fin|date:"d/m/Y" %}
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="scale" titre="Balance générale" sous_titre="Exercice "|add:exercice.code|add:" · "|add:debut|add:" → "|add:fin %}
+    <div class="flex items-center gap-2">
         <form method="post" action="{% url 'imports_exports:export_create' 'BALANCE_XLSX' %}">
             {% csrf_token %}
             <input type="hidden" name="exercice" value="{{ exercice.code }}">
-            <button class="btn btn-sm btn-outline">Excel</button>
+            <button class="btn btn-ghost btn-sm gap-2"><i data-lucide="file-spreadsheet"></i> Excel</button>
         </form>
         <form method="post" action="{% url 'imports_exports:export_create' 'BALANCE_PDF' %}">
             {% csrf_token %}
             <input type="hidden" name="exercice" value="{{ exercice.code }}">
-            <button class="btn btn-sm btn-outline">PDF</button>
+            <button class="btn btn-ghost btn-sm gap-2"><i data-lucide="file-text"></i> PDF</button>
         </form>
     </div>
 </div>
+{% endwith %}
 
-<form method="get" class="flex gap-2 mb-4">
-    <select name="exercice" class="select select-sm select-bordered">
-        {% for ex in exercices %}
-        <option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>
-        {% endfor %}
-    </select>
-    <input type="date" name="date_debut" value="{{ date_debut|date:'Y-m-d' }}" class="input input-sm input-bordered">
-    <input type="date" name="date_fin" value="{{ date_fin|date:'Y-m-d' }}" class="input input-sm input-bordered">
-    {% for c in "12345678" %}
-    <label class="label cursor-pointer gap-1">
-        <input type="checkbox" name="classe" value="{{ c }}" class="checkbox checkbox-xs"
-               {% if c|add:0 in classes_selectionnees %}checked{% endif %}>
-        <span class="label-text text-xs">Cl. {{ c }}</span>
-    </label>
-    {% endfor %}
-    <button class="btn btn-sm btn-primary">Filtrer</button>
-</form>
-
-<div class="overflow-x-auto bg-base-100 rounded shadow">
-    <table class="table table-sm table-zebra">
-        <thead>
-            <tr>
-                <th>Compte</th><th>Libellé</th><th>Cl.</th>
-                <th class="text-right">Débit</th><th class="text-right">Crédit</th>
-                <th class="text-right">Solde</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% regroup lignes by compte__classe as par_classe %}
-            {% for classe in par_classe %}
-                {% for l in classe.list %}
-                <tr>
-                    <td class="font-mono">
-                        <a href="{% url 'etats:grand_livre_compte' l.compte__numero %}?exercice={{ exercice.code }}" class="link link-primary">
-                            {{ l.compte__numero }}
-                        </a>
-                    </td>
-                    <td>{{ l.compte__libelle }}</td>
-                    <td>{{ l.compte__classe }}</td>
-                    <td class="text-right font-mono tabular-nums">{{ l.total_debit|default:0 }}</td>
-                    <td class="text-right font-mono tabular-nums">{{ l.total_credit|default:0 }}</td>
-                    <td class="text-right font-mono tabular-nums {% if l.solde < 0 %}text-error{% endif %}">{{ l.solde|default:0 }}</td>
-                </tr>
-                {% endfor %}
-                <tr class="font-semibold bg-base-200">
-                    <td colspan="3">Sous-total classe {{ classe.grouper }}</td>
-                    <td class="text-right font-mono tabular-nums">
-                        {% with d=0 %}{% for l in classe.list %}{% with d=d|add:l.total_debit %}{% endwith %}{% endfor %}{% endwith %}
-                    </td>
-                    <td colspan="2"></td>
-                </tr>
-            {% empty %}
-            <tr><td colspan="6" class="text-center py-6 opacity-60">Aucune écriture validée</td></tr>
+{% filtres %}
+    <label class="form-control">
+        <span class="label-text mb-1">Exercice</span>
+        <select name="exercice" class="select select-sm select-bordered">
+            {% for ex in exercices %}
+            <option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>
             {% endfor %}
-        </tbody>
-        <tfoot class="font-bold">
-            <tr>
-                <td colspan="3">Total général</td>
-                <td class="text-right font-mono tabular-nums">{{ total_debit }}</td>
-                <td class="text-right font-mono tabular-nums">{{ total_credit }}</td>
-                <td class="text-right">
-                    {% if equilibre %}<span class="badge badge-success">Équilibrée</span>
-                    {% else %}<span class="badge badge-error">Déséquilibrée</span>{% endif %}
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+        </select>
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Du</span>
+        <input type="date" name="date_debut" value="{{ date_debut|date:'Y-m-d' }}" class="input input-sm input-bordered">
+    </label>
+    <label class="form-control">
+        <span class="label-text mb-1">Au</span>
+        <input type="date" name="date_fin" value="{{ date_fin|date:'Y-m-d' }}" class="input input-sm input-bordered">
+    </label>
+    <div class="form-control">
+        <span class="label-text mb-1">Classes</span>
+        <div class="flex flex-wrap items-center gap-2 h-8">
+            {% for c in "12345678" %}
+            <label class="cursor-pointer flex items-center gap-1">
+                <input type="checkbox" name="classe" value="{{ c }}" class="checkbox checkbox-xs"
+                       {% if c|add:0 in classes_selectionnees %}checked{% endif %}>
+                <span class="label-text text-xs">{{ c }}</span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+    <button class="btn btn-sm btn-primary gap-2"><i data-lucide="filter"></i> Filtrer</button>
+{% endfiltres %}
+
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>Compte</th><th>Libellé</th><th>Cl.</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                        <th class="text-right">Solde</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% regroup lignes by compte__classe as par_classe %}
+                    {% for classe in par_classe %}
+                        {% for l in classe.list %}
+                        <tr class="hover">
+                            <td class="font-mono">
+                                <a href="{% url 'etats:grand_livre_compte' l.compte__numero %}?exercice={{ exercice.code }}" class="link link-primary">
+                                    {{ l.compte__numero }}
+                                </a>
+                            </td>
+                            <td>{{ l.compte__libelle }}</td>
+                            <td>{{ l.compte__classe }}</td>
+                            <td class="text-right font-mono tabular-nums">{{ l.total_debit|default:0 }}</td>
+                            <td class="text-right font-mono tabular-nums">{{ l.total_credit|default:0 }}</td>
+                            <td class="text-right font-mono tabular-nums {% if l.solde < 0 %}text-error{% endif %}">{{ l.solde|default:0 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="font-semibold bg-base-200">
+                            <td colspan="3">Sous-total classe {{ classe.grouper }}</td>
+                            <td class="text-right font-mono tabular-nums">
+                                {% with d=0 %}{% for l in classe.list %}{% with d=d|add:l.total_debit %}{% endwith %}{% endfor %}{% endwith %}
+                            </td>
+                            <td colspan="2"></td>
+                        </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                                <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                                    <i data-lucide="scale"></i>
+                                </div>
+                                <p class="font-medium">Aucune écriture validée</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="font-bold">
+                    <tr>
+                        <td colspan="3">Total général</td>
+                        <td class="text-right font-mono tabular-nums">{{ total_debit }}</td>
+                        <td class="text-right font-mono tabular-nums">{{ total_credit }}</td>
+                        <td class="text-right">
+                            {% if equilibre %}<span class="badge badge-success">Équilibrée</span>
+                            {% else %}<span class="badge badge-error">Déséquilibrée</span>{% endif %}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

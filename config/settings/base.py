@@ -31,8 +31,6 @@ SHARED_APPS = [
     "tailwind",
     "theme",
     "django_browser_reload",
-    "crispy_forms",
-    "crispy_tailwind",
     "django_htmx",
     "django_otp",
     "django_otp.plugins.otp_totp",
@@ -149,9 +147,10 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 0.25  # 15 minutes
 
-# Crispy forms (Tailwind)
-CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-CRISPY_TEMPLATE_PACK = "tailwind"
+# Rendu des formulaires : gabarits maison `templates/ui/` (voir
+# apps/core/templatetags/formulaires.py). crispy-tailwind a ete retire : ses gabarits
+# vivent dans site-packages, que Tailwind ne scanne pas — ses classes etaient purgees
+# du CSS compile, laissant les champs sans style.
 
 # django-tailwind
 TAILWIND_APP_NAME = "theme"

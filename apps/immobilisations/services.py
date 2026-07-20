@@ -206,24 +206,42 @@ def mettre_au_rebut(immo, date_rebut, user) -> PieceComptable:
     return piece
 
 
-CATEGORIES_DEFAUT = [
-    # (code, libellé, n° compte immo, n° amort, n° dotation, durée, mode)
-    ("MAT-INFO", "Matériel informatique", "244400", "284440", "681300", 3, "DEGRESSIF"),
-    ("MAT-BUR", "Matériel de bureau", "244100", "284410", "681300", 5, "LINEAIRE"),
-    ("MOBILIER", "Mobilier", "244300", "284430", "681300", 10, "LINEAIRE"),
-    ("MAT-TRANS", "Matériel de transport", "245000", "284500", "681300", 5, "DEGRESSIF"),
-]
+# (code, libellé, n° compte immo, n° amort, n° dotation, durée, mode), par référentiel.
+# Les deux nomenclatures n'ont aucun numéro en commun sur les immobilisations : une
+# liste unique ne pouvait convenir qu'à un seul référentiel — et, telle qu'elle était
+# écrite (comptes à 6 chiffres absents des deux plans), à aucun des deux.
+CATEGORIES_DEFAUT = {
+    "SYSCOHADA": [
+        ("MAT-INFO", "Matériel informatique", "2442", "2844", "6813", 3, "DEGRESSIF"),
+        ("MAT-BUR", "Matériel de bureau", "2441", "2844", "6813", 5, "LINEAIRE"),
+        ("MOBILIER", "Mobilier", "2444", "2844", "6813", 10, "LINEAIRE"),
+        ("MAT-TRANS", "Matériel de transport", "2451", "2845", "6813", 5, "DEGRESSIF"),
+    ],
+    "PCG": [
+        ("MAT-INFO", "Matériel informatique", "2183", "2818", "6811", 3, "DEGRESSIF"),
+        ("MAT-BUR", "Matériel de bureau", "2183", "2818", "6811", 5, "LINEAIRE"),
+        ("MOBILIER", "Mobilier", "2184", "2818", "6811", 10, "LINEAIRE"),
+        ("MAT-TRANS", "Matériel de transport", "2182", "2818", "6811", 5, "DEGRESSIF"),
+    ],
+}
 
 
 @transaction.atomic
-def init_categories_immo_par_defaut() -> int:
-    """Crée les catégories d'immobilisation standard. Idempotent.
-    Les comptes doivent exister dans le plan du tenant (sinon catégorie ignorée).
+def init_categories_immo_par_defaut(societe=None) -> int:
+    """Crée les catégories d'immobilisation standard du référentiel de la société.
+
+    Idempotent. À appeler dans le contexte du schema tenant ; à défaut de `societe`,
+    la société active de la connexion est utilisée. Les comptes doivent exister dans
+    le plan du tenant (sinon la catégorie est ignorée).
     """
+    from django.db import connection
+
     from .models import CategorieImmobilisation
 
+    societe = societe or getattr(connection, "tenant", None)
+    referentiel = getattr(societe, "referentiel", None)
     crees = 0
-    for code, libelle, n_immo, n_amort, n_dot, duree, mode in CATEGORIES_DEFAUT:
+    for code, libelle, n_immo, n_amort, n_dot, duree, mode in CATEGORIES_DEFAUT.get(referentiel, []):
         comptes = {
             c.numero: c
             for c in CompteComptable.objects.filter(numero__in=[n_immo, n_amort, n_dot])

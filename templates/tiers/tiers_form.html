@@ -3,27 +3,28 @@
 {% block title %}{% if object %}Édition tiers{% else %}Nouveau tiers{% endif %} — Ledgera{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">
-    {% if object %}Édition de {{ object.raison_sociale }}{% else %}Nouveau tiers{% endif %}
-</h1>
+<div class="mb-6">
+    {% if object %}
+        {% include "ui/entete.html" with icone="user-pen" titre="Édition du tiers" sous_titre=object.raison_sociale %}
+    {% else %}
+        {% include "ui/entete.html" with icone="user-pen" titre="Nouveau tiers" sous_titre="Le code auxiliaire est attribué automatiquement à l'enregistrement." %}
+    {% endif %}
+</div>
 
 <form method="post" class="space-y-4">
     {% csrf_token %}
-    <div class="card bg-base-100 shadow">
-        <div class="card-body grid grid-cols-1 md:grid-cols-2 gap-4">
-            {% for field in form %}
-            <label class="form-control w-full">
-                <span class="label-text">{{ field.label }}</span>
-                {{ field }}
-                {% if field.help_text %}<span class="text-xs opacity-60">{{ field.help_text }}</span>{% endif %}
-                {% if field.errors %}<span class="text-error text-xs">{{ field.errors|join:", " }}</span>{% endif %}
-            </label>
-            {% endfor %}
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% include "ui/formulaire.html" %}
+            </div>
         </div>
     </div>
     <div class="flex gap-2 justify-end">
         <a href="{% url 'tiers:tiers_list' %}" class="btn btn-ghost">Annuler</a>
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <button type="submit" class="btn btn-primary gap-2 shadow">
+            <i data-lucide="save"></i> Enregistrer
+        </button>
     </div>
 </form>
 {% endblock %}

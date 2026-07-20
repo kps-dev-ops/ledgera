@@ -3,32 +3,30 @@
 {% block title %}{% if mode == "create" %}Nouvelle pièce{% else %}Édition pièce{% endif %} — Ledgera{% endblock %}
 
 {% block content %}
-<h1 class="text-2xl font-semibold mb-4">
-    {% if mode == "create" %}Nouvelle pièce comptable{% else %}Édition de la pièce{% endif %}
-</h1>
+<div class="mb-6">
+    {% if mode == "create" %}
+        {% include "ui/entete.html" with icone="file-pen" titre="Nouvelle pièce comptable" sous_titre="Saisie au brouillard : la pièce reste modifiable jusqu'à sa validation." %}
+    {% else %}
+        {% include "ui/entete.html" with icone="file-pen" titre="Édition de la pièce" sous_titre="Saisie au brouillard : la pièce reste modifiable jusqu'à sa validation." %}
+    {% endif %}
+</div>
 
 <form method="post" id="piece-form" class="space-y-4">
     {% csrf_token %}
 
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <h2 class="card-title text-lg">En-tête</h2>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-6">
+            <h2 class="card-title text-base gap-2"><i data-lucide="file-text"></i> En-tête</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {% for field in form %}
-                <label class="form-control w-full">
-                    <span class="label-text">{{ field.label }}</span>
-                    {{ field }}
-                    {% if field.errors %}<span class="text-error text-xs">{{ field.errors|join:", " }}</span>{% endif %}
-                </label>
-                {% endfor %}
+                {% include "ui/formulaire.html" %}
             </div>
         </div>
     </div>
 
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="card-title text-lg">Lignes d'écriture</h2>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-6">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-2">
+                <h2 class="card-title text-base gap-2"><i data-lucide="list"></i> Lignes d'écriture</h2>
                 <div id="totaux">
                     <span class="badge badge-ghost">Saisir des montants…</span>
                 </div>
@@ -44,9 +42,9 @@
                  hx-target="#totaux"
                  hx-swap="outerHTML"
                  hx-include="closest form">
-                <table class="table table-sm">
+                <table class="table table-zebra table-sm">
                     <thead>
-                        <tr>
+                        <tr class="text-xs uppercase tracking-wide">
                             <th>Compte</th><th>Tiers</th><th>Libellé</th>
                             <th class="text-right">Débit</th><th class="text-right">Crédit</th>
                             <th>Échéance</th><th></th>
@@ -70,7 +68,7 @@
             </div>
 
             <div class="flex justify-start mt-2">
-                <button type="button" class="btn btn-sm btn-outline"
+                <button type="button" class="btn btn-sm btn-outline gap-2"
                         x-data="{ idx: {{ formset.total_form_count }} }"
                         @click="
                             fetch('{% url 'comptabilite:htmx_nouvelle_ligne' %}?index=' + idx)
@@ -81,7 +79,7 @@
                                 document.querySelector('input[name=lignes-TOTAL_FORMS]').value = idx;
                               });
                         ">
-                    + Ajouter une ligne
+                    <i data-lucide="plus"></i> Ajouter une ligne
                 </button>
             </div>
         </div>
@@ -89,7 +87,9 @@
 
     <div class="flex gap-2 justify-end">
         <a href="{% url 'comptabilite:piece_list' %}" class="btn btn-ghost">Annuler</a>
-        <button type="submit" class="btn btn-primary">Enregistrer brouillard</button>
+        <button type="submit" class="btn btn-primary gap-2 shadow">
+            <i data-lucide="save"></i> Enregistrer brouillard
+        </button>
     </div>
 </form>
 {% endblock %}

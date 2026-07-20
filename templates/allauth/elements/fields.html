@@ -1,10 +1,11 @@
 {% comment %}
-Rend les champs des formulaires allauth avec crispy-tailwind, au lieu du
-`form.as_p` par défaut d'allauth (qui produit des <p><label><input> sans style).
+Rend les champs des formulaires allauth (connexion, inscription, mot de passe,
+vérification e-mail, 2FA) avec le même gabarit daisyUI que les écrans métier.
 
-On réutilise le pack crispy « tailwind » déjà configuré pour le reste de
-l'application : les écrans d'authentification ont ainsi la même apparence que
-les écrans métier, sans style ad hoc à maintenir en double.
+Sans ce fichier, allauth utilise `form.as_p` : des <p><label><input> sans style.
+
+On passe par `ui/formulaire.html` — et non par crispy-tailwind — parce que Tailwind
+ne scanne que `templates/` et `apps/` : les classes écrites par un paquet installé
+dans site-packages sont purgées du CSS compilé.
 {% endcomment %}
-{% load crispy_forms_tags %}
-{{ attrs.form|crispy }}
+{% include "ui/formulaire.html" with form=attrs.form %}

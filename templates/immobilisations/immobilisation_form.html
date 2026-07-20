@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% block title %}{% if form.instance.pk %}Modifier{% else %}Nouvelle{% endif %} immobilisation — Ledgera{% endblock %}
 
 {% block content %}
@@ -35,7 +34,7 @@
 
     <div class="card bg-base-100 border border-base-300 shadow-sm">
       <div class="card-body p-6">
-        {{ form|crispy }}
+        {% include "ui/formulaire.html" %}
         <div id="comptes-defaut" class="mt-2"></div>
       </div>
     </div>

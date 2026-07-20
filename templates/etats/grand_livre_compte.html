@@ -3,39 +3,58 @@
 {% block title %}GL {{ compte.numero }} — {{ exercice.code }}{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <a href="{% url 'etats:grand_livre' %}?exercice={{ exercice.code }}" class="link text-sm">← Grand livre</a>
-    <h1 class="text-2xl font-semibold mt-2">
-        <span class="font-mono opacity-70">{{ compte.numero }}</span> — {{ compte.libelle }}
-    </h1>
-    <p class="opacity-70">Exercice {{ exercice.code }} — Classe {{ compte.classe }}</p>
-</div>
+<a href="{% url 'etats:grand_livre' %}?exercice={{ exercice.code }}" class="btn btn-ghost btn-sm gap-2 mb-3">
+    <i data-lucide="arrow-left"></i> Grand livre
+</a>
 
-<div class="overflow-x-auto bg-base-100 rounded shadow">
-    <table class="table table-sm table-zebra">
-        <thead><tr><th>Date</th><th>Pièce</th><th>Tiers</th><th>Libellé</th>
-            <th class="text-right">Débit</th><th class="text-right">Crédit</th>
-            <th class="text-right">Solde</th><th>Lettre</th></tr></thead>
-        <tbody>
-            {% for r in lignes %}
-            <tr>
-                <td>{{ r.date|date:"d/m/Y" }}</td>
-                <td><span class="font-mono">{{ r.journal }}#{{ r.piece_numero }}</span></td>
-                <td>{% if r.tiers %}{{ r.tiers.code_auxiliaire }} {{ r.tiers.raison_sociale }}{% endif %}</td>
-                <td>{{ r.libelle }}</td>
-                <td class="text-right font-mono tabular-nums">{% if r.debit %}{{ r.debit }}{% endif %}</td>
-                <td class="text-right font-mono tabular-nums">{% if r.credit %}{{ r.credit }}{% endif %}</td>
-                <td class="text-right font-mono tabular-nums">{{ r.solde }}</td>
-                <td>{{ r.lettre }}</td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="8" class="text-center py-6 opacity-60">Aucun mouvement</td></tr>
-            {% endfor %}
-        </tbody>
-        <tfoot class="font-bold">
-            <tr><td colspan="6">Solde final</td>
-                <td class="text-right font-mono tabular-nums">{{ solde_final }}</td><td></td></tr>
-        </tfoot>
-    </table>
+{% with classe=compte.classe|stringformat:"s" %}
+<div class="mb-6">
+    {% include "ui/entete.html" with icone="book-open" titre=compte.numero|add:" — "|add:compte.libelle sous_titre="Exercice "|add:exercice.code|add:" · Classe "|add:classe %}
+</div>
+{% endwith %}
+
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wide">
+                        <th>Date</th><th>Pièce</th><th>Tiers</th><th>Libellé</th>
+                        <th class="text-right">Débit</th><th class="text-right">Crédit</th>
+                        <th class="text-right">Solde</th><th>Lettre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in lignes %}
+                    <tr class="hover">
+                        <td>{{ r.date|date:"d/m/Y" }}</td>
+                        <td><span class="font-mono">{{ r.journal }}#{{ r.piece_numero }}</span></td>
+                        <td>{% if r.tiers %}{{ r.tiers.code_auxiliaire }} {{ r.tiers.raison_sociale }}{% endif %}</td>
+                        <td>{{ r.libelle }}</td>
+                        <td class="text-right font-mono tabular-nums">{% if r.debit %}{{ r.debit }}{% endif %}</td>
+                        <td class="text-right font-mono tabular-nums">{% if r.credit %}{{ r.credit }}{% endif %}</td>
+                        <td class="text-right font-mono tabular-nums">{{ r.solde }}</td>
+                        <td>{{ r.lettre }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                                <div class="w-16 h-16 rounded-2xl bg-base-200 flex items-center justify-center icon-lg opacity-40">
+                                    <i data-lucide="book-open"></i>
+                                </div>
+                                <p class="font-medium">Aucun mouvement</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="font-bold">
+                    <tr><td colspan="6">Solde final</td>
+                        <td class="text-right font-mono tabular-nums">{{ solde_final }}</td><td></td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,11 @@
+{% comment %}
+Texte d'aide et erreurs d'un champ — factorisé, car identique dans les trois
+branches de ui/champ.html. Les erreurs passent avant l'aide : quand la saisie est
+refusée, c'est la raison du refus qui doit être lue en premier.
+{% endcomment %}
+{% for erreur in field.errors %}
+    <span class="label-text-alt text-error mt-1 block">{{ erreur }}</span>
+{% endfor %}
+{% if field.help_text %}
+    <span class="label-text-alt opacity-60 mt-1 block">{{ field.help_text }}</span>
+{% endif %}

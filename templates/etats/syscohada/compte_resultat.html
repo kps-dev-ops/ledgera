@@ -1,68 +1,86 @@
 {% extends "base.html" %}
+{% load ui %}
 
 {% block title %}Compte de résultat SYSCOHADA — {{ exercice.code }}{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-start mb-4">
-    <div>
-        <h1 class="text-2xl font-semibold">Compte de résultat SYSCOHADA</h1>
-        <p class="opacity-70">Exercice {{ exercice.code }}</p>
-    </div>
-    <div class="flex gap-2">
-        <form method="get">
-            <select name="exercice" class="select select-sm select-bordered" onchange="this.form.submit()">
-                {% for ex in exercices %}<option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>{% endfor %}
-            </select>
-        </form>
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="trending-up" titre="Compte de résultat SYSCOHADA" sous_titre="Exercice "|add:exercice.code %}
+    <div class="flex items-center gap-2">
         <form method="post" action="{% url 'imports_exports:export_create' 'CR_PDF' %}">
             {% csrf_token %}
             <input type="hidden" name="exercice" value="{{ exercice.code }}">
-            <button class="btn btn-sm btn-outline">PDF</button>
+            <button class="btn btn-ghost btn-sm gap-2"><i data-lucide="file-text"></i> PDF</button>
         </form>
     </div>
 </div>
 
+{% filtres %}
+    <label class="form-control">
+        <span class="label-text mb-1">Exercice</span>
+        <select name="exercice" class="select select-sm select-bordered">
+            {% for ex in exercices %}<option value="{{ ex.code }}" {% if ex == exercice %}selected{% endif %}>{{ ex.code }}</option>{% endfor %}
+        </select>
+    </label>
+    <button class="btn btn-sm btn-primary gap-2"><i data-lucide="filter"></i> Filtrer</button>
+{% endfiltres %}
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <h2 class="card-title text-lg">Charges</h2>
-            <table class="table table-sm">
-                <thead><tr><th>Code</th><th>Libellé</th><th class="text-right">Montant</th></tr></thead>
-                <tbody>
-                    {% for p in charges %}
-                    <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
-                        <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
-                    {% empty %}<tr><td colspan="3" class="opacity-60">Aucune charge</td></tr>{% endfor %}
-                </tbody>
-                <tfoot class="font-bold">
-                    <tr><td colspan="2">Total charges</td>
-                        <td class="text-right font-mono tabular-nums">{{ total_charges }}</td></tr>
-                </tfoot>
-            </table>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-0">
+            <h2 class="card-title text-lg px-4 pt-4">Charges</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-wide">
+                            <th>Code</th><th>Libellé</th><th class="text-right">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in charges %}
+                        <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
+                            <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
+                        {% empty %}<tr><td colspan="3" class="opacity-60">Aucune charge</td></tr>{% endfor %}
+                    </tbody>
+                    <tfoot class="font-bold">
+                        <tr><td colspan="2">Total charges</td>
+                            <td class="text-right font-mono tabular-nums">{{ total_charges }}</td></tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <h2 class="card-title text-lg">Produits</h2>
-            <table class="table table-sm">
-                <thead><tr><th>Code</th><th>Libellé</th><th class="text-right">Montant</th></tr></thead>
-                <tbody>
-                    {% for p in produits %}
-                    <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
-                        <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
-                    {% empty %}<tr><td colspan="3" class="opacity-60">Aucun produit</td></tr>{% endfor %}
-                </tbody>
-                <tfoot class="font-bold">
-                    <tr><td colspan="2">Total produits</td>
-                        <td class="text-right font-mono tabular-nums">{{ total_produits }}</td></tr>
-                </tfoot>
-            </table>
+    <div class="card bg-base-100 border border-base-300 shadow-sm">
+        <div class="card-body p-0">
+            <h2 class="card-title text-lg px-4 pt-4">Produits</h2>
+            <div class="overflow-x-auto">
+                <table class="table table-zebra">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-wide">
+                            <th>Code</th><th>Libellé</th><th class="text-right">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in produits %}
+                        <tr><td class="font-mono">{{ p.code }}</td><td>{{ p.libelle }}</td>
+                            <td class="text-right font-mono tabular-nums">{{ p.montant }}</td></tr>
+                        {% empty %}<tr><td colspan="3" class="opacity-60">Aucun produit</td></tr>{% endfor %}
+                    </tbody>
+                    <tfoot class="font-bold">
+                        <tr><td colspan="2">Total produits</td>
+                            <td class="text-right font-mono tabular-nums">{{ total_produits }}</td></tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <div class="alert {% if resultat_net >= 0 %}alert-success{% else %}alert-warning{% endif %} mt-4">
-    Résultat net : <strong class="font-mono tabular-nums ml-2">{{ resultat_net }}</strong>
-    {% if resultat_net >= 0 %}(bénéfice){% else %}(perte){% endif %}
+    <i data-lucide="{% if resultat_net >= 0 %}trending-up{% else %}trending-down{% endif %}"></i>
+    <span>
+        Résultat net : <strong class="font-mono tabular-nums ml-2">{{ resultat_net }}</strong>
+        {% if resultat_net >= 0 %}(bénéfice){% else %}(perte){% endif %}
+    </span>
 </div>
 {% endblock %}

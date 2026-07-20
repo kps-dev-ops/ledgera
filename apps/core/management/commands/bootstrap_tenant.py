@@ -42,11 +42,16 @@ class Command(BaseCommand):
             init_journaux_par_defaut,
             init_plan_comptable_pour_societe,
         )
+        from apps.fiscal.amorcage import init_configurations_fiscales
+        from apps.immobilisations.services import init_categories_immo_par_defaut
 
         with tenant_context(societe):
             n_comptes = init_plan_comptable_pour_societe(societe)
+            # Les journaux d'abord : les configurations fiscales s'y rattachent (journal OD).
             n_journaux = init_journaux_par_defaut()
             exercice = init_exercice_courant(2026)
+            n_categories = init_categories_immo_par_defaut(societe)
+            rapport_fiscal = init_configurations_fiscales(societe)
 
         self.stdout.write(self.style.SUCCESS(
             f"  • Plan comptes : {n_comptes} nouveaux comptes ajoutés"
@@ -57,4 +62,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"  • Exercice : {exercice.code} (12 périodes)"
         ))
+        self.stdout.write(self.style.SUCCESS(
+            f"  • Catégories d'immobilisation : {n_categories} ajoutées"
+        ))
+        for module, message in rapport_fiscal.items():
+            self.stdout.write(self.style.SUCCESS(f"  • Configuration {module} : {message}"))
         self.stdout.write("Domaine : kps-benin.localhost")

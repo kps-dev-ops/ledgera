@@ -57,10 +57,12 @@
                     <li><a href="{% url 'fiscal:aib_list' %}" class="font-medium">AIB</a></li>
                     <li>
                         <details>
-                            <summary class="font-medium">I/O</summary>
+                            <summary class="font-medium">Imports / Exports</summary>
                             <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
-                                <li><a href="{% url 'imports_exports:import_list' %}"><i data-lucide="download"></i> Imports Excel</a></li>
-                                <li><a href="{% url 'imports_exports:export_list' %}"><i data-lucide="upload"></i> Exports (FEC/Excel/PDF)</a></li>
+                                {# Importer = envoyer vers l'application, exporter = récupérer.
+                                   Les deux icônes étaient interverties. #}
+                                <li><a href="{% url 'imports_exports:import_list' %}"><i data-lucide="upload"></i> Imports Excel</a></li>
+                                <li><a href="{% url 'imports_exports:export_list' %}"><i data-lucide="download"></i> Exports (FEC/Excel/PDF)</a></li>
                             </ul>
                         </details>
                     </li>

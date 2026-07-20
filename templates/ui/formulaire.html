@@ -1,0 +1,21 @@
+{% comment %}
+Rend un formulaire complet en daisyUI. Remplace le filtre de rendu de crispy-forms.
+
+Attend `form` dans le contexte. Pour n'habiller qu'un champ (mise en page sur mesure,
+formulaire en ligne), inclure directement `ui/champ.html` avec `field`.
+
+Ne pas revenir à crispy-tailwind : ses gabarits vivent dans site-packages, que Tailwind
+ne scanne pas — leurs classes sont purgées du CSS compilé. Voir apps/core/templatetags/formulaires.py.
+{% endcomment %}
+
+{% if form.non_field_errors %}
+    <div class="alert alert-error mb-4">
+        <ul class="list-disc list-inside">
+            {% for erreur in form.non_field_errors %}<li>{{ erreur }}</li>{% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+
+{% for field in form.visible_fields %}{% include "ui/champ.html" %}{% endfor %}

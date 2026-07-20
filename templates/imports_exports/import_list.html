@@ -3,32 +3,42 @@
 {% block title %}Mes imports{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-semibold">Mes imports</h1>
-    <a href="{% url 'imports_exports:import_create' %}" class="btn btn-primary">+ Nouvel import</a>
+<div class="flex flex-wrap justify-between items-center gap-3 mb-6">
+    {% include "ui/entete.html" with icone="upload" titre="Mes imports" sous_titre="Suivi des fichiers Excel importés" %}
+    <a href="{% url 'imports_exports:import_create' %}" class="btn btn-primary gap-2">
+        <i data-lucide="plus"></i> Nouvel import
+    </a>
 </div>
 
-<div class="overflow-x-auto bg-base-100 rounded shadow">
-    <table class="table table-sm">
-        <thead><tr><th>#</th><th>Modèle</th><th>Journal</th><th>Exercice</th>
-            <th>Statut</th><th>Pièces créées</th><th>Date</th><th></th></tr></thead>
-        <tbody>
-            {% for j in jobs %}
-            <tr>
-                <td>{{ j.pk }}</td>
-                <td>{{ j.get_modele_display }}</td>
-                <td>{{ j.journal_code }}</td>
-                <td>{{ j.exercice_code }}</td>
-                <td>{% if j.statut == "TERMINE" %}<span class="badge badge-success badge-sm">Terminé</span>
-                    {% elif j.statut == "ERREUR" %}<span class="badge badge-error badge-sm">Erreur</span>
-                    {% elif j.statut == "EN_COURS" %}<span class="badge badge-warning badge-sm">En cours</span>
-                    {% else %}<span class="badge badge-ghost badge-sm">{{ j.statut }}</span>{% endif %}</td>
-                <td>{{ j.nb_pieces_creees }}</td>
-                <td>{{ j.date_creation|date:"d/m H:i" }}</td>
-                <td><a href="{% url 'imports_exports:import_detail' j.pk %}" class="link link-primary">voir</a></td>
-            </tr>
-            {% empty %}<tr><td colspan="8" class="text-center py-6 opacity-60">Aucun import</td></tr>{% endfor %}
-        </tbody>
-    </table>
+<div class="card bg-base-100 border border-base-300 shadow-sm">
+    <div class="card-body p-0">
+        <div class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead><tr class="text-xs uppercase tracking-wide"><th>#</th><th>Modèle</th><th>Journal</th><th>Exercice</th>
+                    <th>Statut</th><th class="text-right">Pièces créées</th><th>Date</th><th></th></tr></thead>
+                <tbody>
+                    {% for j in jobs %}
+                    <tr class="hover">
+                        <td class="font-mono">{{ j.pk }}</td>
+                        <td>{{ j.get_modele_display }}</td>
+                        <td class="font-mono">{{ j.journal_code }}</td>
+                        <td class="font-mono">{{ j.exercice_code }}</td>
+                        <td>{% if j.statut == "TERMINE" %}<span class="badge badge-success badge-sm">Terminé</span>
+                            {% elif j.statut == "ERREUR" %}<span class="badge badge-error badge-sm">Erreur</span>
+                            {% elif j.statut == "EN_COURS" %}<span class="badge badge-warning badge-sm">En cours</span>
+                            {% else %}<span class="badge badge-ghost badge-sm">{{ j.statut }}</span>{% endif %}</td>
+                        <td class="text-right font-mono tabular-nums">{{ j.nb_pieces_creees }}</td>
+                        <td>{{ j.date_creation|date:"d/m H:i" }}</td>
+                        <td class="text-right">
+                            <a href="{% url 'imports_exports:import_detail' j.pk %}" class="btn btn-ghost btn-xs gap-1">
+                                <i data-lucide="eye"></i> Voir
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}<tr><td colspan="8" class="text-center py-12 opacity-50">Aucun import</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
