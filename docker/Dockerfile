@@ -78,7 +78,9 @@ EXPOSE 8000
 # On interroge la page de login : joignable sans authentification ni société active.
 # 127.0.0.1 est accepté par ALLOWED_HOSTS (cf. config/settings/prod.py), sinon Django
 # répondrait 400 et le conteneur resterait unhealthy.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+# start-period genereux : l'entrypoint attend la base, applique les migrations
+# (shared + tenants) et lance collectstatic avant que Gunicorn n'ecoute.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
     CMD curl -fsS -o /dev/null http://127.0.0.1:8000/accounts/login/ || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]
