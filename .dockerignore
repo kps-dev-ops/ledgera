@@ -1,9 +1,32 @@
-.venv
-__pycache__
-*.pyc
-*.pyo
+# Secrets — ne JAMAIS embarquer dans l'image
 .env
+.env.*
+!.env.example
+
+# Dépendances installées dans l'image (binaires spécifiques à la plateforme).
+# Sans cette exclusion, un build LOCAL depuis Windows écraserait les node_modules
+# Linux installés par `npm ci` et casserait la compilation Tailwind.
+node_modules/
+.venv/
+venv/
+
+# Artefacts de build/exécution regénérés dans le conteneur
 staticfiles/
 media/
+theme/static/css/dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Divers
 .git
-.pytest_cache
+.gitignore
+.github/
+docs/
+*.md

@@ -47,7 +47,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Dépendances Python avant le code : la couche est mise en cache tant que
 # pyproject.toml ne bouge pas. Pas de [dev] : pytest/ruff/mypy n'ont rien à faire
 # dans une image déployée.
-COPY pyproject.toml README.md* ./
+# Ne référencer QUE des fichiers réellement versionnés : un motif qui ne
+# correspond à rien (ex. README.md*) fait échouer BuildKit sur un clone frais.
+COPY pyproject.toml ./
+# hatchling déclare packages = ["apps", "config"] : ces deux dossiers doivent
+# exister avant l'installation éditable.
 COPY apps ./apps
 COPY config ./config
 RUN pip install --no-cache-dir uv && uv pip install --system -e "."
