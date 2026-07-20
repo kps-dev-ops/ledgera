@@ -5,6 +5,8 @@ ne sont evalues qu'a la requete, et une classe purgee du CSS ne produit aucune e
 Ces cas font donc de vraies requetes HTTP sur une societe reellement provisionnee.
 """
 
+from pathlib import Path
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -14,6 +16,7 @@ from apps.core.services import provisionner_societe
 from apps.referentiels.services import charger_plan_depuis_fichier
 
 User = get_user_model()
+RACINE = Path(__file__).resolve().parents[2]
 
 # Les ecrans signales comme incoherents, plus ceux qui partagent les memes composants.
 # On passe par les noms d'URL : un chemin en dur ferait passer le test pour un echec
@@ -83,3 +86,39 @@ def test_les_menus_deroulants_portent_la_classe_daisyui(client_admin):
     d'ou l'incoherence visuelle constatee entre ecrans."""
     html = client_admin.get(reverse("fiscal:declaration_list")).content.decode()
     assert "select select-bordered" in html
+
+
+class TestSyntaxeDeGabaritNonFuitee:
+    """Un `{# ... #}` sur PLUSIEURS lignes n'est pas un commentaire Django.
+
+    Le tokeniseur utilise `{#.*?#}` SANS re.DOTALL : dès que le commentaire passe à
+    la ligne, il n'est plus reconnu et son texte sort tel quel dans la page — sans la
+    moindre erreur, ni au chargement du gabarit ni au rendu. Six commentaires écrits
+    ainsi s'affichaient en clair dans la barre de navigation, dont un assez long pour
+    disloquer la mise en page de l'en-tête.
+    """
+
+    def test_aucun_gabarit_ne_contient_de_commentaire_multiligne(self):
+        import re
+
+        fautifs = []
+        for f in (RACINE / "templates").rglob("*.html"):
+            texte = f.read_text(encoding="utf-8")
+            for m in re.finditer(r"\{#", texte):
+                reste = texte[m.start():]
+                fin_ligne, fin_commentaire = reste.find("\n"), reste.find("#}")
+                if fin_commentaire == -1 or (fin_ligne != -1 and fin_commentaire > fin_ligne):
+                    ligne = texte[: m.start()].count("\n") + 1
+                    fautifs.append(f"{f.relative_to(RACINE)}:{ligne}")
+        assert fautifs == [], (
+            "Commentaires `{# #}` s'étendant sur plusieurs lignes — leur texte sera "
+            f"affiché dans la page. Utiliser {{% comment %}} : {fautifs}"
+        )
+
+    @pytest.mark.django_db
+    @pytest.mark.parametrize("nom", ECRANS)
+    def test_aucune_syntaxe_de_gabarit_dans_la_page_servie(self, client_admin, nom):
+        """La contre-épreuve : on regarde le HTML réellement envoyé au navigateur."""
+        html = client_admin.get(reverse(nom)).content.decode()
+        for marqueur in ("{#", "#}", "{%", "{{"):
+            assert marqueur not in html, f"{nom} : « {marqueur} » présent dans la page servie"

@@ -72,7 +72,7 @@ def client_connecte(client, db):
         ("tiers:tiers_list", "Tiers"),
         ("immobilisations:immo_list", "Immobilisations"),
         ("banque:compte_list", "Banque"),
-        ("fiscal:is_list", "IS"),
+        ("fiscal:is_list", "Impôt sur les bénéfices"),
         ("etats:balance", "Balance générale"),
         ("imports_exports:import_list", "Imports Excel"),
     ],
@@ -97,11 +97,27 @@ def test_l_entree_du_menu_est_marquee_sur_son_ecran(client_connecte, nom_url, li
 
 
 @pytest.mark.django_db
-def test_une_seule_rubrique_de_premier_niveau_est_active(client_connecte):
-    """Deux entrées allumées en même temps désorientent autant qu'aucune."""
-    html = client_connecte.get(reverse("banque:compte_list")).content.decode()
-    barre = html[html.index('class="menu menu-horizontal'): html.index("</header>")]
-    assert barre.count("active") == 1, "plus d'une entrée de menu marquée active"
+@pytest.mark.parametrize(
+    ("nom_url", "sommaires_actifs"),
+    [
+        ("banque:compte_list", 0),   # rubrique simple : aucun menu dépliant concerné
+        ("etats:balance", 1),        # « États » s'allume, et lui seul
+        ("fiscal:is_list", 1),       # « Fiscal » s'allume, et lui seul
+    ],
+)
+def test_au_plus_une_rubrique_depliante_est_active(client_connecte, nom_url, sommaires_actifs):
+    """Deux rubriques allumées en même temps désorientent autant qu'aucune.
+
+    Un menu dépliant actif marque AUSSI son entrée interne : c'est voulu, le repli
+    indique la section et le dépli indique l'écran. Ce qui ne doit jamais arriver,
+    c'est que deux sections différentes s'allument.
+    """
+    import re
+
+    html = client_connecte.get(reverse(nom_url)).content.decode()
+    barre = html[html.index('class="menu menu-horizontal') : html.index("</header>")]
+    trouves = re.findall(r'<summary[^>]*class="[^"]*\bactive\b', barre)
+    assert len(trouves) == sommaires_actifs
 
 
 def test_le_style_du_menu_depliant_actif_existe():

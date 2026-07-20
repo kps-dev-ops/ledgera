@@ -12,8 +12,8 @@
     <label class="form-control">
         <span class="label-text mb-1">Compte collectif</span>
         <select name="compte" class="select select-sm select-bordered">
-            {# Le libellé au-dessus nomme déjà le champ : l'option vide dit ce que
-               « rien de sélectionné » signifie, elle ne répète pas le libellé. #}
+            {% comment %} Le libellé au-dessus nomme déjà le champ : l'option vide dit ce que
+               « rien de sélectionné » signifie, elle ne répète pas le libellé. {% endcomment %}
             <option value="">— Choisir —</option>
             {% for c in comptes_collectifs %}
             <option value="{{ c.pk }}" {% if c == compte %}selected{% endif %}>{{ c.numero }} — {{ c.libelle }}</option>

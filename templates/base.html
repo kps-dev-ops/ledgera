@@ -49,20 +49,33 @@
                             </ul>
                         </details>
                     </li>
-                    {# Le lettrage et le grand livre auxiliaire vivent dans l'espace de noms `comptabilite`
-                       mais relèvent des tiers pour l'utilisateur : ils allument cette entrée. #}
+                    {% comment %} Le lettrage et le grand livre auxiliaire vivent dans l'espace de noms `comptabilite`
+                       mais relèvent des tiers pour l'utilisateur : ils allument cette entrée. {% endcomment %}
                     <li><a href="{% url 'tiers:tiers_list' %}" class="font-medium {% actif 'tiers:*' 'comptabilite:grand_livre_tiers' 'comptabilite:lettrer' 'comptabilite:delettrer' %}">Tiers</a></li>
                     <li><a href="{% url 'immobilisations:immo_list' %}" class="font-medium {% actif 'immobilisations:*' %}">Immobilisations</a></li>
                     <li><a href="{% url 'banque:compte_list' %}" class="font-medium {% actif 'banque:*' %}">Banque</a></li>
-                    <li><a href="{% url 'fiscal:declaration_list' %}" class="font-medium {% actif 'fiscal:declaration_list' 'fiscal:liquider' 'fiscal:bordereau' %}">TVA</a></li>
-                    <li><a href="{% url 'fiscal:is_list' %}" class="font-medium {% actif 'fiscal:is_*' %}">IS</a></li>
-                    <li><a href="{% url 'fiscal:aib_list' %}" class="font-medium {% actif 'fiscal:aib_*' %}">AIB</a></li>
+                    {% comment %}
+                    TVA, IS et AIB occupaient trois entrées de premier niveau : la barre
+                    en comptait onze et débordait de l'écran sur un portable. Elles sont
+                    regroupées comme le sont déjà « États » et « Imports / Exports », ce
+                    qui reflète aussi l'organisation de l'application (compta/fiscal/).
+                    {% endcomment %}
+                    <li>
+                        <details>
+                            <summary class="font-medium {% actif 'fiscal:*' %}">Fiscal</summary>
+                            <ul class="bg-base-100 rounded-box z-50 w-64 shadow-lg border border-base-300">
+                                <li><a href="{% url 'fiscal:declaration_list' %}" class="{% actif 'fiscal:declaration_list' 'fiscal:liquider' 'fiscal:bordereau' %}"><i data-lucide="percent"></i> TVA</a></li>
+                                <li><a href="{% url 'fiscal:is_list' %}" class="{% actif 'fiscal:is_*' %}"><i data-lucide="landmark"></i> Impôt sur les bénéfices</a></li>
+                                <li><a href="{% url 'fiscal:aib_list' %}" class="{% actif 'fiscal:aib_*' %}"><i data-lucide="coins"></i> AIB</a></li>
+                            </ul>
+                        </details>
+                    </li>
                     <li>
                         <details>
                             <summary class="font-medium {% actif 'imports_exports:*' %}">Imports / Exports</summary>
                             <ul class="bg-base-100 rounded-box z-50 w-56 shadow-lg border border-base-300">
-                                {# Importer = envoyer vers l'application, exporter = récupérer.
-                                   Les deux icônes étaient interverties. #}
+                                {% comment %} Importer = envoyer vers l'application, exporter = récupérer.
+                                   Les deux icônes étaient interverties. {% endcomment %}
                                 <li><a href="{% url 'imports_exports:import_list' %}" class="{% actif 'imports_exports:import_*' %}"><i data-lucide="upload"></i> Imports Excel</a></li>
                                 <li><a href="{% url 'imports_exports:export_list' %}" class="{% actif 'imports_exports:export_*' %}"><i data-lucide="download"></i> Exports (FEC/Excel/PDF)</a></li>
                             </ul>

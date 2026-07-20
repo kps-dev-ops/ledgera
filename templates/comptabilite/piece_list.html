@@ -5,8 +5,8 @@
 {% block content %}
 <div class="flex flex-wrap justify-between items-center gap-3 mb-6">
     {% include "ui/entete.html" with icone="file-text" titre="Pièces comptables" sous_titre="Brouillard et écritures validées" %}
-    {# La vue exige `saisir_brouillard` : sans cette garde, un lecteur (DAF, auditeur)
-       voit le bouton et se prend un refus au clic. #}
+    {% comment %} La vue exige `saisir_brouillard` : sans cette garde, un lecteur (DAF, auditeur)
+       voit le bouton et se prend un refus au clic. {% endcomment %}
     {% if "saisir_brouillard" in request.permissions %}
     <a href="{% url 'comptabilite:piece_create' %}" class="btn btn-primary gap-2 shadow">
         <i data-lucide="plus"></i> Nouvelle pièce
