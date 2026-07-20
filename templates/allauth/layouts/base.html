@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% comment %}
+Branche toutes les pages allauth (connexion, inscription, mot de passe oublié,
+vérification e-mail, 2FA) sur le design Ledgera.
+
+Sans ce fichier, allauth utilise son propre gabarit : du HTML nu, sans aucune
+feuille de style — c'est ce qui s'affichait en production.
+
+Astuce d'héritage : on ne redéfinit PAS `content` ici. Les pages allauth
+remplissent un bloc nommé `content`, exactement comme `base.html` : les noms
+coïncident, donc leur contenu atterrit directement au bon endroit. Redéfinir
+`content` ici l'écraserait.
+
+`{% extends %}` doit rester la toute première balise du fichier.
+{% endcomment %}
+
+{% block title %}{% block head_title %}{% endblock head_title %} — Ledgera{% endblock title %}

@@ -1,0 +1,10 @@
+{% comment %}
+Rend les champs des formulaires allauth avec crispy-tailwind, au lieu du
+`form.as_p` par défaut d'allauth (qui produit des <p><label><input> sans style).
+
+On réutilise le pack crispy « tailwind » déjà configuré pour le reste de
+l'application : les écrans d'authentification ont ainsi la même apparence que
+les écrans métier, sans style ad hoc à maintenir en double.
+{% endcomment %}
+{% load crispy_forms_tags %}
+{{ attrs.form|crispy }}
