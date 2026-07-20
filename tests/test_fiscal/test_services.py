@@ -13,11 +13,10 @@ from apps.comptabilite.models import (
     Periode,
     PieceComptable,
 )
+from apps.comptabilite.models import LigneEcriture as _LE
 from apps.comptabilite.services import valider_piece
 from apps.fiscal.models import ConfigurationTVA, DeclarationTVA
-from apps.fiscal.services import calculer_tva, creer_declaration_tva, generer_bordereau_pdf
-from apps.comptabilite.models import LigneEcriture as _LE
-from apps.fiscal.services import comptabiliser_liquidation
+from apps.fiscal.services import calculer_tva, comptabiliser_liquidation, creer_declaration_tva, generer_bordereau_pdf
 
 
 class FiscalTestBase(TenantTestCase):

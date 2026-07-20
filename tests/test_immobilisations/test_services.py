@@ -11,7 +11,6 @@ from apps.comptabilite.models import (
     Journal,
     LigneEcriture,
     Periode,
-    PieceComptable,
 )
 from apps.immobilisations.models import (
     CategorieImmobilisation,
@@ -19,7 +18,12 @@ from apps.immobilisations.models import (
     Dotation,
     Immobilisation,
 )
-from apps.immobilisations.services import ceder_immobilisation, comptabiliser_dotations, generer_plan_amortissement, next_code_immobilisation
+from apps.immobilisations.services import (
+    ceder_immobilisation,
+    comptabiliser_dotations,
+    generer_plan_amortissement,
+    next_code_immobilisation,
+)
 
 
 class ImmoTestBase(TenantTestCase):

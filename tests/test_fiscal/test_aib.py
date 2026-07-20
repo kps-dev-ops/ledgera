@@ -12,7 +12,6 @@ from apps.comptabilite.models import (
     Journal,
     LigneEcriture,
     Periode,
-    PieceComptable,
 )
 from apps.fiscal.models import ConfigurationAIB, DeclarationAIB
 from apps.fiscal.selectors import declarations_aib_par_annee

@@ -52,6 +52,11 @@ select = ["E", "F", "I", "UP"]
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["E501"]
+# Les tests contiennent des jeux de donnees litteraux (dicts d ecritures, de
+# lignes de releve...) plus lisibles sur une seule ligne que decoupes. Meme
+# exception que pour les migrations : la longueur de ligne reste appliquee au
+# code applicatif, la ou elle compte.
+"tests/*" = ["E501"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"

@@ -22,7 +22,8 @@ def test_assigne_et_reexecute():
     assert m.role == "admin" and m.actif
     # re-executer doit corriger le role, pas planter sur l'unicite
     call_command("assigner_societe", "--email", "a@x.fr", "--role", "auditeur")
-    m.refresh_from_db(); assert m.role == "auditeur"
+    m.refresh_from_db()
+    assert m.role == "auditeur"
 
 @pytest.mark.django_db
 def test_superuser_flag():

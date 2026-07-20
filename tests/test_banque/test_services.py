@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.db import connection
 from django_tenants.test.cases import TenantTestCase
 
-from apps.banque.models import CompteBancaire, LigneReleve, ReleveBancaire
+from apps.banque.models import CompteBancaire, ReleveBancaire
 from apps.banque.services import creer_releve_depuis_lignes, depointer, pointer_automatiquement, pointer_manuellement
 from apps.comptabilite.models import (
     CompteComptable,
@@ -127,11 +127,13 @@ class TestPointageManuel(BanqueTestBase):
         ])
         ligne = releve.lignes.get(reference_banque="R9")
         pointer_manuellement(ligne, ecr)
-        ligne.refresh_from_db(); ecr.refresh_from_db()
+        ligne.refresh_from_db()
+        ecr.refresh_from_db()
         assert ligne.statut == "POINTEE_MANUEL" and ligne.ligne_ecriture_pointee_id == ecr.id
         assert ecr.pointee is True
         depointer(ligne)
-        ligne.refresh_from_db(); ecr.refresh_from_db()
+        ligne.refresh_from_db()
+        ecr.refresh_from_db()
         assert ligne.statut == "NON_POINTEE" and ligne.ligne_ecriture_pointee_id is None
         assert ecr.pointee is False
 

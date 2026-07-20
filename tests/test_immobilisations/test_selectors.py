@@ -13,7 +13,7 @@ class TestTableauImmobilisations(ImmoTestBase):
         for m in range(1, 7):  # comptabilise 6 mois => cumul 1200
             comptabiliser_dotations(self.exercice, m, self.user)
         lignes = tableau_immobilisations(date(2026, 6, 30))
-        ligne = next(l for l in lignes if l["code"] == immo.code)
+        ligne = next(x for x in lignes if x["code"] == immo.code)
         assert ligne["cumul_amortissements"] == Decimal("1200.00")
         assert ligne["vnc"] == Decimal("10800.00")
 

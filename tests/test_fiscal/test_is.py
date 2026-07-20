@@ -1,7 +1,7 @@
-import pytest
 from datetime import date
 from decimal import Decimal
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django_tenants.test.cases import TenantTestCase
@@ -14,8 +14,9 @@ from apps.comptabilite.models import (
     Periode,
     PieceComptable,
 )
+from apps.comptabilite.models import LigneEcriture as _LE
 from apps.comptabilite.services import valider_piece
-from apps.fiscal.models import ConfigurationIS, DeclarationIS
+from apps.fiscal.models import ConfigurationIS
 from apps.fiscal.selectors import declarations_is_par_exercice
 from apps.fiscal.services import (
     ajouter_retraitement,
@@ -24,7 +25,6 @@ from apps.fiscal.services import (
     generer_bordereau_is_pdf,
     resultat_comptable,
 )
-from apps.comptabilite.models import LigneEcriture as _LE
 
 
 class ISTestBase(TenantTestCase):
