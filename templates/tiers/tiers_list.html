@@ -19,7 +19,7 @@
     <label class="form-control">
         <span class="label-text mb-1">Type</span>
         <select name="type" class="select select-sm select-bordered">
-            <option value="">Tous types</option>
+            <option value="">Tous</option>
             <option value="CLIENT" {% if request.GET.type == "CLIENT" %}selected{% endif %}>Clients</option>
             <option value="FOURNISSEUR" {% if request.GET.type == "FOURNISSEUR" %}selected{% endif %}>Fournisseurs</option>
             <option value="DIVERS" {% if request.GET.type == "DIVERS" %}selected{% endif %}>Divers</option>

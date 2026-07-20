@@ -33,7 +33,14 @@ module.exports = {
         },
     },
     plugins: [
-        require('@tailwindcss/forms'),
+        // `strategy: 'class'` est INDISPENSABLE avec daisyUI. En mode « base » (défaut),
+        // ce greffon impose `padding: .5rem .75rem` à tout <select>/<input>, alors que
+        // daisyUI fixe une hauteur et une interligne sans réinitialiser ce padding
+        // vertical. Sur `select-sm` (height:2rem, line-height:2rem) il reste ~1rem de
+        // hauteur utile pour une ligne de 2rem : le texte des options était rogné.
+        // En mode « class », le greffon n'agit que sur les classes `form-*` explicites ;
+        // daisyUI garde la main sur l'habillage des contrôles.
+        require('@tailwindcss/forms')({ strategy: 'class' }),
         require('@tailwindcss/typography'),
         require('daisyui'),
     ],

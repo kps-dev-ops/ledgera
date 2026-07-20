@@ -10,10 +10,13 @@ class Command(BaseCommand):
     help = "Crée (ou complète) le tenant KPS Bénin avec plan SYSCOHADA, journaux et exercice 2026"
 
     def handle(self, *args, **options):
-        # 1) Plan de comptes type partagé
-        if not PlanComptableType.objects.filter(code="SYSCOHADA_2017").exists():
-            self.stdout.write("Chargement du plan SYSCOHADA…")
-            call_command("charger_plan_syscohada")
+        # 1) Plan de comptes type partagé — rechargé À CHAQUE FOIS, volontairement.
+        # Le chargeur est idempotent (get_or_create par numéro). Ne l'appeler que si le
+        # plan est absent empêchait toute mise à jour : une installation existante ne
+        # recevait jamais les comptes ajoutés au fichier depuis, et l'amorçage fiscal
+        # échouait ensuite sur « comptes absents du plan ».
+        self.stdout.write("Chargement / mise à jour du plan SYSCOHADA…")
+        call_command("charger_plan_syscohada")
         plan = PlanComptableType.objects.get(code="SYSCOHADA_2017")
 
         # 2) Société (création si absente)
