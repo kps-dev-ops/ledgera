@@ -1,0 +1,101 @@
+{% extends "allauth/layouts/base.html" %}
+{% comment %}
+Mise en page des écrans d'entrée : connexion, inscription, mot de passe oublié,
+vérification d'e-mail, double authentification.
+
+Ils héritaient du conteneur des écrans métier, prévu pour des tableaux pleine
+largeur : sur un écran de bureau, le formulaire de connexion s'étirait sur 1900 px.
+On remplace donc `main` en entier plutôt que d'ajuster le conteneur commun.
+
+Deux colonnes à partir de `lg` : le formulaire est ramené à une largeur de lecture,
+et l'espace libéré porte le repère de l'application — un extrait de journal
+équilibré, l'artefact le plus caractéristique de la comptabilité en partie double,
+et l'invariant central du produit (R1 : débit = crédit). Sous `lg`, seule la carte
+reste.
+{% endcomment %}
+
+{% block navbar %}{% endblock %}
+
+{% comment %}
+Les messages sont replacés dans la colonne du formulaire (voir plus bas) : à leur
+emplacement d'origine, ils s'afficheraient pleine largeur au-dessus de la mise en
+page en deux colonnes.
+{% endcomment %}
+{% block messages %}{% endblock %}
+
+{% block main %}
+<main class="min-h-screen grid lg:grid-cols-[1fr_28rem] xl:grid-cols-[1fr_32rem]">
+
+    {# ---------------- Panneau de marque (masqué sur petit écran) ---------------- #}
+    <section class="hidden lg:flex flex-col justify-between bg-secondary text-white p-12 xl:p-16">
+        <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-lg font-black">L</span>
+            <span class="text-2xl font-bold tracking-tight">Ledgera</span>
+        </div>
+
+        <div class="max-w-md">
+            <h2 class="text-3xl xl:text-4xl font-bold tracking-tight leading-tight">
+                La comptabilité du groupe,<br>entité par entité.
+            </h2>
+            <p class="mt-4 text-white/70 leading-relaxed">
+                SYSCOHADA et plan comptable général français, dans une seule application.
+                Chaque société garde ses écritures, son plan de comptes et ses déclarations.
+            </p>
+        </div>
+
+        {% comment %}
+        Repère de la page : un journal qui s'équilibre. Les montants sont fixes et
+        illustratifs — ils reprennent une facture de vente au taux de TVA béninois
+        (18 %), écrite sur les comptes SYSCOHADA réels de l'application.
+        {% endcomment %}
+        <figure class="font-mono text-sm">
+            <figcaption class="flex justify-between text-[0.7rem] uppercase tracking-widest text-white/40 pb-2 border-b border-white/15">
+                <span>Journal des ventes</span>
+                <span class="flex gap-8"><span>Débit</span><span>Crédit</span></span>
+            </figcaption>
+            <div class="divide-y divide-white/10">
+                <div class="flex justify-between py-2 text-white/80">
+                    <span>4111 &nbsp;Clients</span>
+                    <span class="flex gap-8 tabular-nums"><span class="w-24 text-right">1 180 000</span><span class="w-24 text-right text-white/25">—</span></span>
+                </div>
+                <div class="flex justify-between py-2 text-white/80">
+                    <span>7011 &nbsp;Ventes</span>
+                    <span class="flex gap-8 tabular-nums"><span class="w-24 text-right text-white/25">—</span><span class="w-24 text-right">1 000 000</span></span>
+                </div>
+                <div class="flex justify-between py-2 text-white/80">
+                    <span>4431 &nbsp;TVA facturée</span>
+                    <span class="flex gap-8 tabular-nums"><span class="w-24 text-right text-white/25">—</span><span class="w-24 text-right">180 000</span></span>
+                </div>
+            </div>
+            <div class="flex justify-between pt-2 mt-1 border-t-2 border-white/30 font-semibold">
+                <span class="text-white/50 text-[0.7rem] uppercase tracking-widest self-end">Équilibré</span>
+                <span class="flex gap-8 tabular-nums"><span class="w-24 text-right">1 180 000</span><span class="w-24 text-right">1 180 000</span></span>
+            </div>
+        </figure>
+    </section>
+
+    {# ---------------- Formulaire ---------------- #}
+    <section class="flex flex-col justify-center bg-base-100 px-6 py-12 sm:px-12">
+        <div class="w-full max-w-sm mx-auto">
+            {# Le panneau de marque est masqué sous `lg` : le repère revient ici. #}
+            <div class="flex items-center gap-3 mb-8 lg:hidden">
+                <span class="w-9 h-9 rounded-lg bg-primary text-primary-content flex items-center justify-center font-black">L</span>
+                <span class="text-xl font-bold tracking-tight text-primary">Ledgera</span>
+            </div>
+
+            {% if messages %}
+            <div class="space-y-2 mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} text-sm py-2">
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </section>
+
+</main>
+{% endblock %}

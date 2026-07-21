@@ -119,6 +119,11 @@
     </header>
     {% endblock %}
 
+    {% comment %}
+    Bloc nommé pour que les écrans d'authentification, qui n'ont pas le conteneur
+    commun, replacent les messages à l'intérieur de leur colonne de formulaire.
+    {% endcomment %}
+    {% block messages %}
     {% if messages %}
     <div class="container mx-auto px-4 mt-4 space-y-2">
         {% for message in messages %}
@@ -128,10 +133,18 @@
         {% endfor %}
     </div>
     {% endif %}
+    {% endblock %}
 
+    {% comment %}
+    Les écrans métier remplissent `content` et héritent du conteneur centré.
+    Les pages d'authentification remplacent `main` en entier : un formulaire de
+    connexion n'a pas à s'étirer sur toute la largeur d'un écran de bureau.
+    {% endcomment %}
+    {% block main %}
     <main class="container mx-auto px-4 py-6">
         {% block content %}{% endblock %}
     </main>
+    {% endblock %}
 
     {% block modals %}{% endblock %}
 
